@@ -1,0 +1,1219 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #141519;
+    height: 100vh;
+    overflow: hidden;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#map {
+    height: 95vh;
+    width: 100%;
+    flex: none;
+}
+
+.bottom-banner {
+    height: 5vh;
+    background: #000;
+    border-top: 1px solid #2f3336;
+    color: #d1d5db;
+    font-family: monospace;
+    font-size: 13.5px;
+    overflow: hidden;
+    position: relative;
+    z-index: 800;
+    display: flex;
+    align-items: center;
+}
+
+.banner-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.banner-label {
+    flex: 0 0 auto;
+    padding: 0 16px 0 27px;
+    font-weight: 500;
+    color: #e7e9ea;
+    white-space: nowrap;
+    font-size: 14px;
+    background: linear-gradient(to right, #000, #000 80%, transparent);
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid #2f3336;
+}
+
+.live-dot {
+    color: #ef4444;
+    margin-left: 6px;
+    animation: pulse 2s infinite;
+}
+
+.marquee-wrapper {
+    flex: 1;
+    overflow: hidden;
+    height: 100%;
+    position: relative;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+.marquee-track {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    animation: marquee-scroll 90s linear infinite;
+    will-change: transform;
+}
+
+.marquee-track:hover {
+    animation-play-state: paused;
+}
+
+.marquee-track.paused {
+    animation-play-state: paused !important;
+}
+
+@keyframes marquee-scroll {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-400%);
+    }
+}
+
+.tweet-marquee-item {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+    background: rgba(20, 21, 25, 0.4);
+    border: 1px solid #2f3336;
+    border-radius: 4px;
+    max-width: fit-content;
+    min-width: 280px;
+    white-space: nowrap;
+    overflow: hidden;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    height: 100%;
+}
+
+.tweet-marquee-item .avatar-small {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #1d1f23;
+}
+
+.tweet-marquee-item .avatar-small.missing {
+    background: linear-gradient(135deg, #1d9bf0 0%, #0d6efd 100%);
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tweet-marquee-item .tweet-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #d1d5db;
+    cursor: pointer;
+}
+
+.tweet-text:hover {
+    color: #47adf1;
+}
+
+.tweet-marquee-item .tweet-author {
+    font-weight: 500;
+    color: #e7e9ea;
+    margin-right: 8px;
+}
+
+.tweet-marquee-item .tweet-time {
+    color: #6b7280;
+    font-size: 12px;
+    margin-left: auto;
+    padding-left: 12px;
+    white-space: nowrap;
+}
+
+.marquee-duplicate {
+    display: flex;
+    align-items: center;
+    gap: 60px;
+}
+
+.marquee-wrapper:hover::after {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(15, 23, 42, 0.85);
+    color: #94a3b8;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.custom-popup .maplibregl-popup-content {
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+.custom-popup .maplibregl-popup-tip {
+    display: none !important;
+}
+
+#last-update {
+    position: absolute;
+    bottom: 6vh;
+    right: 16px;
+    color: #e7e9ea;
+    font-family: monospace;
+    font-size: 12px;
+    z-index: 900;
+    pointer-events: none;
+    border-radius: 6px;
+}
+
+.time-btn {
+    background: transparent;
+    border: 1.5px solid #2f3336;
+    color: #e7e9ea;
+    padding: 8px 8px;
+    cursor: pointer;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: monospace !important;
+    background-color: #000;
+    border-radius: 0;
+}
+
+.time-btn:first-child {
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+}
+
+.time-btn:last-child {
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+.time-btn + .time-btn {
+    margin-left: -1px;
+}
+
+.time-btn:hover {
+    background: #2f3336;
+    border-color: #9badff;
+    z-index: 1;
+    position: relative;
+}
+
+.time-btn.active {
+    border-color: #9badff;
+    color: #fff;
+    z-index: 2;
+    position: relative;
+}
+
+.time-selector {
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 8px;
+}
+
+#tweet-count {
+    position: static;
+    color: #e7e9ea;
+    padding: 8px 8px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 14px;
+    background-color: #000;
+    border: 1px solid #2f3336;
+    white-space: nowrap;
+}
+
+.search-container {
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.left-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.time-group {
+    display: flex;
+}
+
+.top-bar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.right-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-input-wrapper {
+    position: relative;
+}
+
+#tweet-search {
+    background-color: #000;
+    border: 1px solid #2f3336;
+    color: #e7e9ea;
+    padding: 8px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 14px;
+    width: 350px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#tweet-search::placeholder {
+    color: #6e767d;
+}
+
+#tweet-search:focus {
+    border-color: #1d9bf0;
+}
+
+.search-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #6e767d;
+}
+
+.author-filter-container {
+    position: relative;
+}
+
+.author-filter-btn {
+    background-color: #000;
+    border: 1px solid #2f3336;
+    color: #e7e9ea;
+    padding: 8px 6px 8px 12px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.author-filter-btn:hover {
+    border-color: #0d6efd;
+}
+
+.author-filter-btn.has-selection {
+    border-color: #0d6efd;
+}
+
+.author-filter-btn svg {
+    transition: transform 0.2s;
+}
+
+.author-filter-btn.open svg {
+    transform: rotate(180deg);
+}
+
+.author-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background-color: #000;
+    border: 1px solid #2f3336;
+    border-radius: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    min-width: 200px;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.author-dropdown.open {
+    display: block;
+}
+
+.author-item {
+    padding: 8px 12px;
+    color: #e7e9ea;
+    font-family: monospace;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #2f3336;
+}
+
+.author-item:last-child {
+    border-bottom: none;
+}
+
+.author-item:hover {
+    background-color: #2f3336;
+}
+
+.author-item input[type="checkbox"] {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.author-item label {
+    cursor: pointer;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+}
+
+.author-item img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.author-filter-actions {
+    padding: 8px;
+    border-top: 1px solid #2f3336;
+    display: flex;
+    gap: 8px;
+}
+
+.author-filter-actions button {
+    flex: 1;
+    background-color: transparent;
+    border: 1px solid #2f3336;
+    color: #e7e9ea;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.author-filter-actions button:hover {
+    background-color: #2f3336;
+}
+
+.author-dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+
+.author-dropdown::-webkit-scrollbar-track {
+    background: #000;
+}
+
+.author-dropdown::-webkit-scrollbar-thumb {
+    background: #2f3336;
+    border-radius: 4px;
+}
+
+.author-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.rotation-btn {
+    background-color: #000;
+    border: 1px solid #2f3336;
+    color: #e7e9ea;
+    padding: 8px 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    white-space: nowrap;
+    width: 40px;
+    margin-right: 0;
+}
+
+.rotation-btn.active {
+    background-color: #10B981;
+    border-color: #10B981;
+    color: #fff;
+}
+
+.rotation-btn:hover {
+    border-color: #10B981;
+}
+
+.important-tweets-panel {
+    position: absolute;
+    bottom: 6vh;
+    left: 20px;
+    max-width: 500px;
+    border-radius: 8px;
+    z-index: 1000;
+    overflow: hidden;
+    background: rgb(8, 8, 9);
+    border: 1px solid #2f3336;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid #2f3336;
+}
+
+.panel-title {
+    color: #e7e9ea;
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.close-panel-btn {
+    background: transparent;
+    border: none;
+    color: #6e767d;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.close-panel-btn:hover {
+    color: #e7e9ea;
+}
+
+.panel-content {
+    padding: 12px;
+}
+
+.important-tweet-card {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tweet-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.tweet-card-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1d9bf0 0%, #0d6efd 100%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.tweet-card-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.tweet-card-author {
+    color: #e7e9ea;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    flex: 1;
+    min-width: 0;
+    max-width: fit-content;
+}
+
+.tweet-card-time {
+    color: #6b7280;
+    font-family: monospace;
+    font-size: 11px;
+    flex-shrink: 0;
+    padding-right: 32px;
+    margin-left: auto;
+}
+
+.tweet-card-body {
+    color: #d1d5db;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.tweet-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+}
+
+.tweet-nav-controls {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+    align-items: center;
+}
+
+.tweet-nav-counter {
+    color: #9ca3af;
+    font-family: monospace;
+    font-size: 11px;
+    margin-right: 4px;
+}
+
+.tweet-nav-btn-small:hover {
+    color: #1d9bf0;
+}
+
+.tweet-card-link,
+.tweet-map-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    text-decoration: none;
+    transition: all 0.2s;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.tweet-card-link {
+    color: #1d9bf0;
+    background: transparent;
+    border: none;
+}
+
+.tweet-card-link:hover {
+    color: #47adf1;
+    background: rgba(29, 155, 240, 0.1);
+}
+
+.tweet-map-btn {
+    color: #10b981;
+    background: transparent;
+    border: 1px solid #10b981;
+    cursor: pointer;
+}
+
+.tweet-map-btn:hover {
+    color: #34d399;
+    border-color: #34d399;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.no-tweets-message {
+    color: #6e767d;
+    font-family: monospace;
+    font-size: 13px;
+    text-align: center;
+    padding: 20px;
+}
+
+.tweet-card {
+    background: rgb(8, 8, 9);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #e7e9ea;
+    position: relative;
+    width: 450px;
+}
+
+.tweet-card-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+    z-index: 10;
+}
+
+.tweet-card-close:hover {
+    background-color: rgba(47, 51, 54, 0.5);
+}
+
+.tweet-card-close svg {
+    color: #9ca3af;
+    width: 16px;
+    height: 16px;
+}
+
+.tweet-card-close:hover svg {
+    color: #ffffff;
+}
+
+.tweet-card-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.tweet-card-nav-count {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 1);
+    font-weight: 400;
+}
+
+.tweet-card-nav-btn {
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.tweet-card-nav-btn:hover {
+    color: #1d9bf0;
+}
+
+.important-badge {
+    background-color: #da3b3b;
+    color: white;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    margin-right: 8px;
+    font-family: monospace;
+}
+
+/* ============================================
+   RESPONSIVE - MEDIA QUERIES
+   ============================================ */
+
+/* Tablette et petits écrans (< 900px) */
+@media (max-width: 900px) {
+    /* Top bar en colonne */
+    .top-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+    }
+
+    .left-controls,
+    .right-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    /* Time buttons plus petits */
+    .time-btn {
+        padding: 6px 6px;
+        font-size: 11px;
+    }
+
+    /* Champ de recherche plus petit */
+    #tweet-search {
+        width: 100%;
+        max-width: 250px;
+        font-size: 13px;
+    }
+
+    /* Tweet count plus compact */
+    #tweet-count {
+        font-size: 12px;
+        padding: 6px 8px;
+    }
+
+    /* Panneau important tweets */
+    .important-tweets-panel {
+        left: 10px;
+        right: 10px;
+        max-width: none;
+        bottom: 7vh;
+    }
+
+    /* Last update */
+    #last-update {
+        right: 10px;
+        font-size: 11px;
+    }
+
+    /* Tweet card dans popup */
+    .tweet-card {
+        width: 90vw;
+        max-width: 400px;
+    }
+
+    /* Marquee items */
+    .tweet-marquee-item {
+        max-width: 340px;
+        min-width: 240px;
+        gap: 8px;
+        padding: 0 10px;
+    }
+
+    .tweet-marquee-item .tweet-author,
+    .tweet-marquee-item .tweet-text {
+        font-size: 12.5px;
+    }
+
+    /* Banner label */
+    .banner-label {
+        padding: 0 12px 0 16px;
+        font-size: 12px;
+    }
+
+    .bottom-banner {
+        font-size: 11px;
+        height: 45px;
+        min-height: 45px;
+    }
+
+    /* Ajuster la position des éléments */
+    .important-tweets-panel {
+        bottom: 50px;
+    }
+
+    #last-update {
+        bottom: 50px;
+    }
+}
+
+/* Mobile (< 640px) */
+@media (max-width: 640px) {
+    /* Top bar en 2 lignes */
+    .top-bar {
+        flex-direction: column;
+        gap: 8px;
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        align-items: stretch;
+    }
+
+    /* Ligne 1 : Rotation + Time selector */
+    .left-controls {
+        flex-wrap: nowrap;
+        gap: 8px;
+        width: 100%;
+        order: 1;
+    }
+
+    /* Ligne 2 : Count + Search + Author filter */
+    .right-controls {
+        gap: 8px;
+        flex-wrap: nowrap;
+        overflow: hidden;
+        max-width: 100%;
+        width: 100%;
+        order: 2;
+    }
+
+    /* Bouton rotation en premier, compact */
+    .rotation-btn {
+        width: 36px;
+        height: 36px;
+        padding: 6px;
+        flex-shrink: 0;
+        order: 1;
+    }
+
+    /* Time group prend le reste de la ligne 1 */
+    .time-group {
+        flex: 1;
+        display: flex;
+        order: 2;
+    }
+
+    .time-btn {
+        flex: 1;
+        padding: 6px 4px;
+        font-size: 10px;
+    }
+
+    /* Tweet count visible et élargi sur ligne 2 */
+    #tweet-count {
+        display: block;
+        font-size: 11px;
+        padding: 6px 8px;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    /* Author dropdown sur mobile - position fixe pour éviter les problèmes */
+    .author-filter-container {
+        position: relative;
+    }
+
+    .author-dropdown {
+        position: fixed;
+        top: auto;
+        bottom: auto;
+        right: 8px;
+        left: 8px;
+        max-width: none;
+        width: auto;
+        max-height: 60vh;
+        z-index: 10001;
+        transform: translateY(0);
+    }
+
+    /* S'assurer que tous les menus déroulants s'affichent correctement */
+    [class*="dropdown"],
+    [class*="menu"],
+    .maplibregl-popup {
+        max-width: calc(100vw - 16px) !important;
+    }
+
+    /* Ajuster les items pour mobile */
+    .author-item {
+        padding: 10px 12px;
+        font-size: 14px;
+        touch-action: manipulation;
+    }
+
+    .author-item img {
+        width: 24px;
+        height: 24px;
+    }
+
+    /* Search input élargi */
+    #tweet-search {
+        width: 100%;
+        font-size: 12px;
+        padding: 6px 28px 6px 8px;
+    }
+
+    .search-input-wrapper {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Author filter button élargi */
+    .author-filter-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    /* Panel important tweets full width */
+    .important-tweets-panel {
+        left: 8px;
+        right: 8px;
+        bottom: 7vh;
+    }
+
+    .panel-content {
+        padding: 8px;
+    }
+
+    .tweet-card-body {
+        font-size: 12px;
+    }
+
+    /* Tweet card popup réduite */
+    .tweet-card {
+        width: calc(100vw - 40px);
+        max-width: 340px;
+        padding: 10px;
+    }
+
+    .tweet-card-header {
+        gap: 6px;
+    }
+
+    .tweet-card-avatar {
+        width: 28px;
+        height: 28px;
+    }
+
+    .tweet-card-author {
+        font-size: 13px;
+    }
+
+    .tweet-card-time {
+        font-size: 10px;
+        padding-right: 24px;
+    }
+
+    .tweet-card-body {
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .tweet-card-link,
+    .tweet-map-btn {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+
+    /* Last update */
+    #last-update {
+        font-size: 10px;
+        right: 8px;
+        bottom: 7vh;
+    }
+
+    /* Banner */
+    .banner-label {
+        padding: 0 8px 0 12px;
+        font-size: 11px;
+    }
+
+    .bottom-banner {
+        font-size: 10px;
+        height: 40px;
+        min-height: 40px;
+    }
+
+    /* Map prend plus de place */
+    #map {
+        height: calc(100vh - 40px);
+    }
+
+    /* Ajuster les éléments positionnés par rapport au bandeau */
+    .important-tweets-panel {
+        bottom: 45px;
+    }
+
+    #last-update {
+        bottom: 45px;
+    }
+
+    /* Marquee items encore plus petits */
+    .tweet-marquee-item {
+        min-width: 200px;
+        max-width: 280px;
+        font-size: 11px;
+        padding: 0 6px;
+    }
+
+    .tweet-marquee-item .avatar-small {
+        width: 20px;
+        height: 20px;
+        font-size: 11px;
+    }
+
+    .tweet-marquee-item .tweet-time {
+        font-size: 9px;
+    }
+
+    .tweet-marquee-item .tweet-author,
+    .tweet-marquee-item .tweet-text {
+        font-size: 11px;
+    }
+
+    /* Author dropdown full width */
+    .author-dropdown {
+        left: 0;
+        right: 0;
+        width: auto;
+    }
+}
+
+/* Très petits écrans (< 400px) */
+@media (max-width: 400px) {
+    .top-bar {
+        gap: 6px;
+    }
+
+    /* Ligne 1 */
+    .left-controls {
+        gap: 6px;
+    }
+
+    .rotation-btn {
+        width: 32px;
+        height: 32px;
+        padding: 5px;
+        font-size: 12px;
+    }
+
+    .time-btn {
+        font-size: 9px;
+        padding: 5px 2px;
+        min-width: 0;
+    }
+
+    /* Ligne 2 */
+    .right-controls {
+        gap: 6px;
+    }
+
+    #tweet-count {
+        font-size: 10px;
+        padding: 5px 6px;
+    }
+
+    #tweet-search {
+        font-size: 11px;
+        padding: 5px 24px 5px 6px;
+    }
+
+    .search-icon {
+        right: 6px;
+        font-size: 12px;
+    }
+
+    .author-filter-btn {
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+
+    .author-filter-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Tweet card */
+    .tweet-card {
+        padding: 8px;
+    }
+
+    .tweet-card-header {
+        gap: 6px;
+    }
+
+    .tweet-card-avatar {
+        width: 28px;
+        height: 28px;
+    }
+
+    .tweet-card-author {
+        font-size: 12px;
+    }
+
+    .tweet-card-body {
+        font-size: 11px;
+    }
+
+    /* Important badge */
+    .important-badge {
+        font-size: 9px;
+        padding: 3px;
+    }
+}
+
+/* Paysage mobile (hauteur < 500px) */
+@media (max-height: 500px) {
+    /* Réduire les hauteurs fixes */
+    .bottom-banner {
+        height: 40px;
+    }
+
+    #map {
+        height: calc(100vh - 40px);
+    }
+
+    .important-tweets-panel {
+        bottom: 45px;
+        max-height: 200px;
+    }
+
+    #last-update {
+        bottom: 45px;
+    }
+
+    /* Top bar plus compact */
+    .top-bar {
+        top: 5px;
+        gap: 5px;
+    }
+
+    .time-btn {
+        padding: 4px 6px;
+    }
+}

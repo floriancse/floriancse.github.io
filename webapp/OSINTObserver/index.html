@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>OSINT Observer</title>
+    <link rel="icon" href="img/favicon_io/favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.css' />
+    <script src='https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.js'></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Julius+Sans+One&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Carte -->
+    <div id="map"></div>
+
+    <div class="top-bar">
+        <div class="left-controls">
+            <button id="rotationToggleBtn" class="rotation-btn active">⏸</button>
+            <div class="time-group">
+                <button class="time-btn active" data-days="1">1 j.</button>
+                <button class="time-btn" data-days="7">7 j.</button>
+                <button class="time-btn" data-days="30">30 j.</button>
+            </div>
+            <div id="tweet-count"></div>
+        </div>
+
+        <div class="right-controls">
+
+            <div class="author-filter-container">
+                <button class="author-filter-btn" id="layerFilterBtn">
+                    <span id="layerFilterLabel">Couches</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+                <div class="author-dropdown" id="layerDropdown">
+                    <div id="layerList"></div>
+                </div>
+            </div>
+
+            <div class="author-filter-container">
+                <button class="author-filter-btn" id="authorFilterBtn">
+                    <span id="authorFilterLabel">Sources</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+                <div class="author-dropdown" id="authorDropdown">
+                    <div id="authorList"></div>
+                </div>
+            </div>
+
+            <div class="search-input-wrapper">
+                <input type="text" id="tweet-search" placeholder="Filtrer les événements par mot-clé"
+                    autocomplete="off" />
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="last-update"></div>
+    <div class="bottom-banner" id="bottomBanner">
+        <div class="banner-content">
+            <div class="banner-label">Derniers tweets <span class="live-dot">🔴</span></div>
+
+            <div class="marquee-wrapper">
+                <div class="marquee-track" id="marqueeTrack">
+                    <!-- les tweets seront injectés ici par JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="main.js"></script>
+
+</body>
+
+</html>

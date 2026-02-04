@@ -1,0 +1,479 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+}
+
+/* Layout général : carte + panneau droite */
+#layout {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+}
+
+/* Carte = 80% */
+#map {
+    flex: 1;
+}
+
+/* Panneau droite = 20% */
+.controls {
+    width: 25vw;
+    height: 100%;
+    background: white;
+    overflow-y: auto;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.15);
+    border-left: 1px solid #ddd;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.controls h2 {
+    font-size: 2vw;
+    font-family: "Julius Sans One", sans-serif;
+    font-weight: 300;
+    padding-top: 20px;
+}
+
+.slider-container {
+    margin-top: 15px;
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    background: #ddd;
+    border-radius: 4px;
+    position: relative;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    border: 2px solid #444;
+    cursor: pointer;
+    transform: translateY(-6px);
+    padding: 10px;           /* ou même 12–15px */
+    margin: -10px 0 0 -10px; /* recentre correctement */
+}
+
+.slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    border: 2px solid #444;
+    cursor: pointer;
+    padding: 10px;
+    margin: -10px 0 0 -10px;
+}
+
+.level-display {
+    font-size: 24px;
+    padding-top: 0 !important;
+}
+
+.level-label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+h2 {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    color: #000;
+}
+
+#cities-table {
+    width: 90%;
+    border-collapse: collapse;
+    font-family: monospace;
+    margin: 0 auto;
+    padding-bottom: 10px;
+}
+
+#cities-table th,
+#cities-table td {
+    padding: 5px;
+    text-align: center;
+    border-right: 1px solid #000000;
+}
+
+#cities-table th:last-child,
+#cities-table td:last-child {
+    border-right: none;
+}
+
+#cities-table th {
+    background-color: black;
+    color: white;
+    font-weight: bold;
+}
+
+#cities-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+#close-table:hover {
+    background-color: #005a99;
+}
+
+#cities-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.stats-box {
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.stats-title {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    text-align: center;
+}
+
+.stat-line {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 15px;
+    align-items: center;
+    padding: 16px 0;
+    text-align: left;
+    font-size: 14px;
+    border-top: 1px solid #bdbdbd;
+}
+
+.stat-icon {
+    width: 28px;
+    height: 28px;
+    justify-self: center;
+}
+
+.stat-text {
+    display: inline;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.stat-label,
+.stat-value {
+    display: inline;
+}
+
+#stats-pop-impacted {
+    background-color: black;
+    color: white;
+    padding-left: 6px;
+    padding-right: 6px;
+    font-weight: 700;
+}
+
+.stat-value {
+    font-weight: bold;
+    background-color: #eee;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.stat-separator {
+    height: 1px;
+    background: #ddd;
+    margin: 5px 0;
+}
+
+.city-pulse {
+    width: 20px;
+    height: 20px;
+    position: relative;
+}
+
+.maplibregl-popup.city-popup .maplibregl-popup-content {
+    background: rgba(255, 255, 255, 1);
+    color: rgb(0, 0, 0);
+    padding: 8px 12px;
+    border-radius: 2px;
+    box-shadow: 0 4px 12px rgba(114, 114, 114, 0.3);
+    font-family: monospace;
+}
+
+.maplibregl-popup.city-popup .maplibregl-popup-tip {
+    border-top-color: rgba(255, 255, 255, 1) !important;
+}
+
+#slider-image-container {
+    position: relative;
+    margin: 10px auto;
+    width: 90%;
+    -webkit-user-drag: none;
+    user-drag: none;
+    user-select: none;
+}
+
+.slider-image {
+    width: 100%;
+    display: block;
+}
+
+#ice-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    overflow: hidden;
+}
+
+#ice-overlay img {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#slider-line {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #b4b4b4;
+}
+
+#slider-handle {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background: #b4b4b4;
+    cursor: grab;
+    pointer-events: auto;
+    transform: translate(-50%, -50%);
+}
+
+#ice-color,
+#ice-grey {
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+}
+
+.map-loading {
+    position: absolute;
+    inset: 0;
+    background: rgba(240, 240, 245, 1);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    transition: opacity 0.4s ease;
+}
+
+.map-loading.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 5px solid #e0e0e0;
+    border-top: 5px solid #0066cc;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.panel-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.spinner-small {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid #0066cc;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN - PETITS ÉCRANS
+   ======================================== */
+
+/* Tablettes et petits écrans (≤ 768px) */
+@media screen and (max-width: 768px) {
+    #layout {
+        flex-direction: column;
+    }
+
+    #map {
+        height: 60vh;
+        /* La carte prend 60% de la hauteur */
+    }
+
+    .controls {
+        width: 100%;
+        /* Le panneau prend toute la largeur */
+        height: 40vh;
+        /* 40% de la hauteur */
+        border-left: none;
+        border-top: 1px solid #ddd;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .controls h2 {
+        font-size: 5vw;
+        /* Augmente la taille pour mobile */
+        padding-top: 15px;
+    }
+
+    .stats-title {
+        font-size: 18px;
+    }
+
+    .stat-line {
+        padding: 12px 0;
+        font-size: 13px;
+    }
+
+    #cities-table {
+        font-size: 12px;
+    }
+
+    #cities-table th,
+    #cities-table td {
+        padding: 4px;
+    }
+}
+
+/* Très petits écrans / smartphones (≤ 480px) */
+@media screen and (max-width: 480px) {
+    #map {
+        height: 55vh;
+    }
+
+    .controls {
+        height: 45vh;
+    }
+
+    .controls h2 {
+        font-size: 6vw;
+        padding-top: 10px;
+    }
+
+    .stats-title {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .stat-line {
+        grid-template-columns: 25px 1fr;
+        gap: 10px;
+        padding: 10px 0;
+        font-size: 12px;
+    }
+
+    .stat-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .stats-box {
+        padding: 10px;
+    }
+
+    #slider-image-container {
+        width: 95%;
+    }
+
+    .slider {
+        height: 6px;
+    }
+
+    .slider::-webkit-slider-thumb {
+        width: 18px;
+        height: 18px;
+    }
+
+    .slider::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+    }
+
+    #cities-table {
+        font-size: 11px;
+        width: 95%;
+    }
+
+    #cities-table th,
+    #cities-table td {
+        padding: 3px 2px;
+    }
+
+    .level-display {
+        font-size: 20px;
+    }
+
+    .level-label {
+        font-size: 12px;
+    }
+}
+
+/* Mode paysage sur mobile */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    #layout {
+        flex-direction: row;
+    }
+
+    #map {
+        height: 100vh;
+        width: 60%;
+    }
+
+    .controls {
+        width: 40%;
+        height: 100vh;
+        border-left: 1px solid #ddd;
+        border-top: none;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .controls h2 {
+        font-size: 3.5vw;
+    }
+}
+
+.slider-container,
+.slider {
+    touch-action: pan-y;     /* autorise le scroll vertical, bloque le horizontal */
+    /* ou touch-action: manipulation;  ← encore plus permissif */
+}
