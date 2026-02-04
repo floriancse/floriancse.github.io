@@ -75,7 +75,7 @@ function toggleRotation() {
 document.getElementById("rotationToggleBtn").addEventListener("click", toggleRotation);
 
 document.addEventListener("DOMContentLoaded", async () => {
-    const response = await fetch("http://135.125.101.174/api/twitter_conflicts/last_tweet_date");
+    const response = await fetch("https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/last_tweet_date");
     const data = await response.json();
     document.getElementById("last-update").textContent =
         `Dernière mise à jour : ${data.last_date} à ${data.last_hour}`;
@@ -89,7 +89,7 @@ async function preloadAllData() {
         // Charger les auteurs pour chaque période (maintenant en heures)
         const authorPromises = periods.map(async (days) => {
             const hours = days * 24; // Convertir en heures
-            const response = await fetch(`http://135.125.101.174/api/twitter_conflicts/authors?hours=${hours}`);
+            const response = await fetch(`https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/authors?hours=${hours}`);
             const data = await response.json();
             cachedAuthors[days] = data.authors || [];
         });
@@ -97,7 +97,7 @@ async function preloadAllData() {
         // Charger les tweets pour chaque période (maintenant en heures)
         const tweetPromises = periods.map(async (days) => {
             const hours = days * 24; // Convertir en heures
-            const response = await fetch(`http://135.125.101.174/api/twitter_conflicts/tweets.geojson?hours=${hours}`);
+            const response = await fetch(`https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?hours=${hours}`);
             const data = await response.json();
             cachedData[days] = data;
         });
@@ -120,7 +120,7 @@ async function loadAuthors() {
             allAuthors = cachedAuthors[currentDays];
         } else {
             // Fallback si pas en cache
-            const response = await fetch(`http://135.125.101.174/api/twitter_conflicts/authors?hours=${hours}`);
+            const response = await fetch(`https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/authors?hours=${hours}`);
             const data = await response.json();
             allAuthors = data.authors || [];
             cachedAuthors[currentDays] = allAuthors;
@@ -205,7 +205,7 @@ async function loadTweets(days) {
         // Fallback si pas en cache
         const params = new URLSearchParams({ hours: hours });
         const response = await fetch(
-            `http://135.125.101.174/api/twitter_conflicts/tweets.geojson?${params.toString()}`
+            `https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?${params.toString()}`
         );
         data = await response.json();
         cachedData[days] = data;
@@ -463,7 +463,7 @@ map.on('style.load', async () => {
 
     map.addSource('disputed_area', {
         type: 'geojson',
-        data: 'http://135.125.101.174/api/twitter_conflicts/disputed_area.geojson'
+        data: 'https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/disputed_area.geojson'
     });
 
     // Utiliser le pattern pour le fill
@@ -850,7 +850,7 @@ function toggleBanner() {
 
 async function fetchNewTweets() {
     try {
-        const res = await fetch("http://135.125.101.174/api/twitter_conflicts/random_tweets");
+        const res = await fetch("https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/random_tweets");
         if (!res.ok) throw new Error("Erreur fetch tweets");
 
         const { tweets } = await res.json();
@@ -1111,7 +1111,7 @@ function displayCurrentImportantTweet() {
 // Fonction principale pour charger et afficher
 async function loadImportantTweets() {
     try {
-        const response = await fetch('http://135.125.101.174/api/twitter_conflicts/important_tweets');
+        const response = await fetch('https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/important_tweets');
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
