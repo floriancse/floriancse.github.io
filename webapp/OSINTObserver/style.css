@@ -598,7 +598,9 @@ body {
     font-weight: 600;
     flex: 1;
     min-width: 0;
-    max-width: fit-content;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .tweet-card-time {
@@ -764,15 +766,15 @@ body {
 .important-badge {
     background-color: #da3b3b;
     color: white;
-    padding: 4px;
+    padding: 4px 8px;
     border-radius: 4px;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     white-space: nowrap;
-    margin-right: 8px;
     font-family: monospace;
+    flex-shrink: 0;
 }
 
 /* ============================================
@@ -873,6 +875,9 @@ body {
 
 /* Mobile (< 640px) */
 @media (max-width: 640px) {
+    .important-badge {
+        display: none;
+    }
     /* Top bar en 2 lignes */
     .top-bar {
         flex-direction: column;
@@ -1004,29 +1009,46 @@ body {
         font-size: 12px;
     }
 
-    /* Tweet card popup réduite */
-    .tweet-card {
-        width: calc(100vw - 40px);
-        max-width: 340px;
-        padding: 10px;
-    }
-
+    /* Tweet card header - réorganisation pour éviter superposition */
     .tweet-card-header {
         gap: 6px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+
+    .important-badge {
+        flex-basis: 100%;
+        width: 100%;
+        text-align: center;
+        font-size: 10px;
+        padding: 3px 6px;
+        margin-bottom: 4px;
+        display: none !important;
     }
 
     .tweet-card-avatar {
         width: 28px;
         height: 28px;
+        font-size: 12px;
     }
 
     .tweet-card-author {
+        flex: 1;
+        min-width: 0;
         font-size: 13px;
+        max-width: calc(100% - 120px);
     }
 
     .tweet-card-time {
         font-size: 10px;
         padding-right: 24px;
+    }
+
+    /* Tweet card popup réduite */
+    .tweet-card {
+        width: calc(100vw - 40px);
+        max-width: 340px;
+        padding: 10px;
     }
 
     .tweet-card-body {
@@ -1168,27 +1190,32 @@ body {
     }
 
     .tweet-card-avatar {
-        width: 28px;
-        height: 28px;
+        width: 26px;
+        height: 26px;
+        font-size: 11px;
     }
 
     .tweet-card-author {
         font-size: 12px;
+        max-width: calc(100% - 80px);
     }
 
     .tweet-card-body {
         font-size: 11px;
     }
 
-    /* Important badge */
+    /* Important badge encore plus petit */
     .important-badge {
         font-size: 9px;
-        padding: 3px;
+        padding: 2px 4px;
     }
 }
 
 /* Paysage mobile (hauteur < 500px) */
 @media (max-height: 500px) {
+    .important-badge {
+        display: none;
+    }
     /* Réduire les hauteurs fixes */
     .bottom-banner {
         height: 40px;
@@ -1215,5 +1242,33 @@ body {
 
     .time-btn {
         padding: 4px 6px;
+    }
+}
+
+
+@media (max-width: 480px) {
+    .important-badge {
+        display: none !important;
+    }
+
+    /* On libère de l'espace pour que le pseudo et l'heure respirent */
+    .tweet-card-header {
+        justify-content: space-between !important;
+        gap: 8px !important;
+        flex-wrap: nowrap !important;     /* évite le wrap bizarre */
+    }
+
+    .tweet-card-author {
+        max-width: 68% !important;        /* ← ajuste selon tes tests, 65–75% souvent parfait */
+        flex-shrink: 1 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .tweet-card-time {
+        flex-shrink: 0 !important;
+        font-size: 10.5px !important;
+        white-space: nowrap !important;
     }
 }
