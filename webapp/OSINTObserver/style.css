@@ -2,21 +2,29 @@ body {
     margin: 0;
     padding: 0;
     background-color: #141519;
-    height: 100vh;
+    height: 100dvh;
+    /* ← Change vh → dvh (dynamic viewport height) */
     overflow: hidden;
-    overflow-x: hidden;
     display: flex;
     flex-direction: column;
 }
 
+
 #map {
-    height: 95vh;
+    height: calc(100dvh - 50px);
+    /* ← Ajuste selon la hauteur réelle du bandeau sur mobile */
+    flex: 1;
+    /* ← Laisse le bandeau en dehors du flux flex */
     width: 100%;
-    flex: none;
 }
 
 .bottom-banner {
-    height: 5vh;
+    position: fixed;
+    /* ← Crucial ! */
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
     background: #000;
     border-top: 1px solid #2f3336;
     color: #d1d5db;
@@ -27,6 +35,9 @@ body {
     z-index: 800;
     display: flex;
     align-items: center;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    /* ← Magic iOS */
+    box-sizing: border-box;
 }
 
 .banner-content {
@@ -66,9 +77,12 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.4;
     }
@@ -94,6 +108,7 @@ body {
     from {
         transform: translateX(0);
     }
+
     to {
         transform: translateX(-400%);
     }
@@ -227,7 +242,7 @@ body {
     border-bottom-right-radius: 20px;
 }
 
-.time-btn + .time-btn {
+.time-btn+.time-btn {
     margin-left: -1px;
 }
 
@@ -783,6 +798,7 @@ body {
 
 /* Tablette et petits écrans (< 900px) */
 @media (max-width: 900px) {
+
     /* Top bar en colonne */
     .top-bar {
         flex-direction: column;
@@ -875,9 +891,8 @@ body {
 
 /* Mobile (< 640px) */
 @media (max-width: 640px) {
-    .important-badge {
-        display: none;
-    }
+
+
     /* Top bar en 2 lignes */
     .top-bar {
         flex-direction: column;
@@ -1216,13 +1231,14 @@ body {
     .important-badge {
         display: none;
     }
+
     /* Réduire les hauteurs fixes */
     .bottom-banner {
-        height: 40px;
+        height: 44px;
     }
 
     #map {
-        height: calc(100vh - 40px);
+        height: calc(100dvh - 44px);
     }
 
     .important-tweets-panel {
@@ -1244,4 +1260,3 @@ body {
         padding: 4px 6px;
     }
 }
-
