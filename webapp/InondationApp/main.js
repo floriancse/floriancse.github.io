@@ -1,6 +1,6 @@
 // main.js – Version finale intégrée
 
-const API_URL = 'http://135.125.101.174:8001';
+const API_URL = 'https://api-fonte-glace.duckdns.org';
 let currentLevel = 0;
 let selectedCountry = null;
 const SLIDER_BOTTOM_OFFSET = 7;
