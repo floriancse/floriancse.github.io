@@ -1016,7 +1016,7 @@ function createImportantTweetsPanel() {
     panel.innerHTML = `
 
     <div class="panel-content" id="panelContent">
-        <div class="no-tweets-message">Chargement...</div>
+        <div class="no-tweets-message">Aucun événement important ces dernières 24 heures.</div>
     </div>
 `;
 
