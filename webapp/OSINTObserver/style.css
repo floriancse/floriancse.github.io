@@ -1381,9 +1381,7 @@ body {
     cursor: pointer;
 }
 
-.tweet-card-images img:hover {
-    transform: scale(1.02);
-}
+
 
 /* Responsive - Mobile */
 @media (max-width: 640px) {
