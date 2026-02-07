@@ -1332,8 +1332,9 @@ body {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 2px;
-    max-height: 300px;
-    aspect-ratio: 1;
+    max-height: 350px; /* Réduit pour un ratio plus horizontal */
+    aspect-ratio: 16 / 9; /* Ratio horizontal au lieu de 1:1 carré */
+    width: 100%;
 }
 
 .tweet-card-images.quad .img-wrapper {

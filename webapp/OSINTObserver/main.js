@@ -380,15 +380,29 @@ function createPopupContent(props, showNavigation = false, currentIndex = 0, tot
 `;
 }
 
-function showPopupAtIndex(index) {
+// Remplacer showPopupAtIndex complètement
+showPopupAtIndex = function(index) {
     if (currentFeatures.length === 0) return;
     currentFeatureIndex = index;
     const feature = currentFeatures[currentFeatureIndex];
     const coordinates = feature.geometry.coordinates.slice();
-    const props = feature.properties;
+    
+    // IMPORTANT : Parser les propriétés si elles sont en string
+    let props = feature.properties;
+    
+    // Si images est une string, la parser
+    if (typeof props.images === 'string') {
+        try {
+            props.images = JSON.parse(props.images);
+        } catch (e) {
+            props.images = [];
+        }
+    }
+    
     const htmlContent = createPopupContent(props, popupPinned, currentFeatureIndex, currentFeatures.length);
     popup.setLngLat(coordinates).setHTML(htmlContent).addTo(map);
-}
+    
+};
 
 window.nextTweet = () => {
     currentFeatureIndex = (currentFeatureIndex + 1) % currentFeatures.length;
