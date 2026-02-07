@@ -290,6 +290,64 @@ function createPopupContent(props, showNavigation = false, currentIndex = 0, tot
         minute: '2-digit'
     });
 
+    // Gestion des images
+    let imagesHtml = '';
+    if (props.images && Array.isArray(props.images) && props.images.length > 0) {
+        const imageCount = props.images.length;
+        
+        if (imageCount === 1) {
+            // Une seule image - affichage simple
+            imagesHtml = `
+                <div class="tweet-card-images single">
+                    <img src="${props.images[0]}" alt="Image du tweet" loading="lazy" 
+                         onerror="this.parentElement.style.display='none'">
+                </div>
+            `;
+        } else if (imageCount === 2) {
+            // Deux images - côte à côte
+            imagesHtml = `
+                <div class="tweet-card-images double">
+                    ${props.images.map(img => `
+                        <img src="${img}" alt="Image du tweet" loading="lazy" 
+                             onerror="this.style.display='none'">
+                    `).join('')}
+                </div>
+            `;
+        } else if (imageCount === 3) {
+            // Trois images - une grande à gauche, deux petites à droite
+            imagesHtml = `
+                <div class="tweet-card-images triple">
+                    <img src="${props.images[0]}" alt="Image du tweet" loading="lazy" class="main-img"
+                         onerror="this.style.display='none'">
+                    <div class="secondary-imgs">
+                        <img src="${props.images[1]}" alt="Image du tweet" loading="lazy"
+                             onerror="this.style.display='none'">
+                        <img src="${props.images[2]}" alt="Image du tweet" loading="lazy"
+                             onerror="this.style.display='none'">
+                    </div>
+                </div>
+            `;
+        } else {
+            // 4 images ou plus - grille 2x2 avec indicateur "+X" si plus de 4
+            const displayImages = props.images.slice(0, 4);
+            const remainingCount = imageCount - 4;
+            
+            imagesHtml = `
+                <div class="tweet-card-images quad">
+                    ${displayImages.map((img, idx) => `
+                        <div class="img-wrapper ${idx === 3 && remainingCount > 0 ? 'has-more' : ''}">
+                            <img src="${img}" alt="Image du tweet" loading="lazy"
+                                 onerror="this.style.display='none'">
+                            ${idx === 3 && remainingCount > 0 ? `
+                                <div class="more-overlay">+${remainingCount}</div>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+    }
+
     return `
     <div class="tweet-card">
         <button onclick="window.closePopup()" class="tweet-card-close" style="display: ${popupPinned ? 'flex' : 'none'}">
@@ -307,6 +365,7 @@ function createPopupContent(props, showNavigation = false, currentIndex = 0, tot
             <div class="tweet-card-time">${formattedTime} · ${formattedDate}</div>
         </div>
         <div class="tweet-card-body">${props.body}</div>
+        ${imagesHtml}
         <div class="tweet-card-actions">
             <a href="${props.url}" class="tweet-card-link" target="_blank">Voir le tweet ↗</a>
             ${showNavigation && totalCount > 1 ? `
@@ -1051,6 +1110,44 @@ function displayCurrentImportantTweet() {
     const tweet = importantTweets[currentImportantIndex];
 
     const hasLocation = tweet.lat && tweet.long;
+    
+    // Gestion des images pour le panneau important
+    let imagesHtml = '';
+    if (tweet.images && Array.isArray(tweet.images) && tweet.images.length > 0) {
+        const imageCount = tweet.images.length;
+        
+        if (imageCount === 1) {
+            imagesHtml = `
+                <div class="tweet-card-images single">
+                    <img src="${tweet.images[0]}" alt="Image du tweet" loading="lazy" 
+                         onerror="this.parentElement.style.display='none'">
+                </div>
+            `;
+        } else if (imageCount === 2) {
+            imagesHtml = `
+                <div class="tweet-card-images double">
+                    ${tweet.images.map(img => `
+                        <img src="${img}" alt="Image du tweet" loading="lazy" 
+                             onerror="this.style.display='none'">
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            // Pour 3+ images dans le panneau, on utilise le layout triple
+            imagesHtml = `
+                <div class="tweet-card-images triple">
+                    <img src="${tweet.images[0]}" alt="Image du tweet" loading="lazy" class="main-img"
+                         onerror="this.style.display='none'">
+                    <div class="secondary-imgs">
+                        ${tweet.images.slice(1, 3).map(img => `
+                            <img src="${img}" alt="Image du tweet" loading="lazy"
+                                 onerror="this.style.display='none'">
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+    }
 
     content.innerHTML = `
         <div class="important-tweet-card">
@@ -1065,6 +1162,7 @@ function displayCurrentImportantTweet() {
                 <div class="tweet-card-time">${formatTweetTime(tweet.date_published)}</div>
             </div>
             <div class="tweet-card-body">${truncateText(tweet.body, 280)}</div>
+            ${imagesHtml}
             <div class="tweet-card-actions">
                 <a href="${tweet.url}" target="_blank" rel="noopener noreferrer" class="tweet-card-link">
                     <span>Voir le tweet ↗</span>
