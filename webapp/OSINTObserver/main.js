@@ -294,7 +294,7 @@ function createPopupContent(props, showNavigation = false, currentIndex = 0, tot
     let imagesHtml = '';
     if (props.images && Array.isArray(props.images) && props.images.length > 0) {
         const imageCount = props.images.length;
-        
+
         if (imageCount === 1) {
             // Une seule image - affichage simple
             imagesHtml = `
@@ -331,7 +331,7 @@ function createPopupContent(props, showNavigation = false, currentIndex = 0, tot
             // 4 images ou plus - grille 2x2 avec indicateur "+X" si plus de 4
             const displayImages = props.images.slice(0, 4);
             const remainingCount = imageCount - 4;
-            
+
             imagesHtml = `
                 <div class="tweet-card-images quad">
                     ${displayImages.map((img, idx) => `
@@ -762,6 +762,10 @@ map.on('style.load', async () => {
 
     map.on('click', 'tweets_hover_area', (e) => {
         popupPinned = true;
+
+        // AJOUT : Fermer la popup existante pour forcer la régénération
+        popup.remove();
+
         const point = e.point;
         currentFeatures = map.queryRenderedFeatures(point, {
             layers: ['tweets_hover_area']
@@ -771,7 +775,7 @@ map.on('style.load', async () => {
         currentFeatures.sort((a, b) => {
             const importanceA = parseFloat(a.properties.importance) || 0;
             const importanceB = parseFloat(b.properties.importance) || 0;
-            return importanceB - importanceA; // Ordre décroissant
+            return importanceB - importanceA;
         });
 
         if (currentFeatures.length === 0) return;
@@ -1110,12 +1114,12 @@ function displayCurrentImportantTweet() {
     const tweet = importantTweets[currentImportantIndex];
 
     const hasLocation = tweet.lat && tweet.long;
-    
+
     // Gestion des images pour le panneau important
     let imagesHtml = '';
     if (tweet.images && Array.isArray(tweet.images) && tweet.images.length > 0) {
         const imageCount = tweet.images.length;
-        
+
         if (imageCount === 1) {
             imagesHtml = `
                 <div class="tweet-card-images single">
