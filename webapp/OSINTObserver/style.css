@@ -258,7 +258,6 @@ body {
     font-family: monospace;
     font-size: 14px;
     background-color: rgba(0, 0, 0, 0.7);
-    border: 1px solid rgb(67, 67, 67);
     white-space: nowrap;
 }
 
