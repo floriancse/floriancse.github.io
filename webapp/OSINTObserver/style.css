@@ -1836,8 +1836,8 @@ body {
 }
 
 .panel-tab.active {
-    color: #1d9bf0;
-    border-bottom-color: #1d9bf0;
+    color: #10b981;
+    border-bottom-color: #10b981;
 }
 
 .panel-tab:not(:last-child)::after {
