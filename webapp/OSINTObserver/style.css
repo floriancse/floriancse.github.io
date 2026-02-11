@@ -21,7 +21,7 @@ body {
     left: 0;
     right: 0;
     height: 40px;
-    background: #000;
+    background: rgba(0, 0, 0, 0.7);
     border-top: 1px solid #2f3336;
     color: #d1d5db;
     font-family: monospace;
@@ -417,7 +417,7 @@ body {
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
-    background-color: #000;
+    background-color: rgba(0, 0, 0, 0.7);
     border: 1px solid #2f3336;
     border-radius: 12px;
     max-height: 400px;
@@ -505,7 +505,7 @@ body {
 }
 
 .author-dropdown::-webkit-scrollbar-track {
-    background: #000;
+    background: rgba(0, 0, 0, 0.7);
 }
 
 .author-dropdown::-webkit-scrollbar-thumb {
@@ -560,7 +560,7 @@ body {
     justify-content: space-between;
     align-items: flex-start;
     padding: 16px;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 1);
     border-bottom: 1px solid #2f3336;
 }
 
@@ -1737,7 +1737,7 @@ body {
     bottom: 150px;
     right: -420px;
     width: 420px;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 1);
     border: 1px solid rgb(29, 29, 29);
     border-radius: 12px;
     color: #e7e9ea;
@@ -1810,7 +1810,7 @@ body {
 /* Styles pour les onglets du country-panel */
 .panel-tabs {
     display: flex;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 1);
     border-bottom: 1px solid rgb(66, 66, 66);
     padding: 0;
 }
@@ -1949,6 +1949,7 @@ body {
     white-space: pre-line;
     display: none;
     font-family: monospace;
+    
 }
 
 .heatmap-stats {

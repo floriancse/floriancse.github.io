@@ -1229,32 +1229,36 @@ searchInput.addEventListener("input", () => {
     }, 300);
 });
 
+// ======================================
+// ======================================
+// GESTION DU COUNTRY PANEL
+// ======================================
 
 // Gestion des onglets Résumé / Événements
 document.addEventListener('DOMContentLoaded', () => {
     const panelTabs = document.querySelectorAll('.panel-tab[data-tab]');
-    
+
     panelTabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const tabName = tab.dataset.tab;
-            
+
             // Mettre à jour les onglets actifs
             panelTabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            
+
             // Mettre à jour le contenu visible
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
-            
+
             const targetTab = document.getElementById(`${tabName}-tab`);
             if (targetTab) {
                 targetTab.classList.add('active');
             }
-            
+
             // Sauvegarder l'onglet actuel
             currentCountryTab = tabName;
-            
+
             // Charger les données appropriées (toujours 30j)
             if (currentCountryName) {
                 if (tabName === 'summary') {
@@ -1295,12 +1299,12 @@ map.on('click', 'world_countries_fill', (e) => {
             tab.classList.remove('active');
         }
     });
-    
+
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
     });
     document.getElementById('summary-tab').classList.add('active');
-    
+
     currentCountryTab = 'summary';
     currentCountryId = countryId;
     currentCountryName = countryName;
@@ -1355,7 +1359,11 @@ async function loadCountryHeatmap(countryName) {
     countryInfo.innerHTML = '<div class="feed-loading">Chargement des données...</div>';
 
     try {
-        const hours = 30 * 24;
+        // Calculer le début du mois actuel
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const daysSinceStart = Math.ceil((now - firstDayOfMonth) / (1000 * 60 * 60 * 24)) + 1;
+        const hours = daysSinceStart * 24;
 
         const response = await fetch(
             `https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?country=${encodeURIComponent(countryName)}&hours=${hours}`
@@ -1366,125 +1374,132 @@ async function loadCountryHeatmap(countryName) {
 
     } catch (error) {
         console.error("Erreur lors du chargement des données:", error);
-        countryInfo.innerHTML = `
-            <div style="text-align: center; padding: 20px; color: #ef4444;">
-                ❌ Erreur lors du chargement des données
-            </div>
-        `;
+        countryInfo.innerHTML = 
+'<div class="feed-empty">Aucun événement</div>';
+        
     }
 }
 
+
 function createHeatmap(features, countryName) {
-    // Préparer les données par jour
     const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    // --- RECTIFICATION DES CLÉS DE DATE (Locale au lieu de UTC) ---
+    const getDateKey = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const monthName = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Premier jour du mois
+    const firstDay = new Date(year, month, 1);
+    // Ajustement pour commencer la semaine (0=Dimanche, 1=Lundi...)
+    // Si vous voulez que la heatmap commence par Lundi, utilisez : (firstDay.getDay() + 6) % 7
+    const startDayOfWeek = firstDay.getDay();
+
     const dayData = {};
-    
-    // Initialiser les 30 derniers jours à 0
-    for (let i = 29; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - i);
-        const dateKey = date.toISOString().split('T')[0];
+
+    // Initialiser tous les jours du mois à 0
+    for (let i = 1; i <= daysInMonth; i++) {
+        const date = new Date(year, month, i);
+        const dateKey = getDateKey(date);
         dayData[dateKey] = 0;
     }
-    
+
     // Compter les événements par jour
     features.forEach(feature => {
         const date = new Date(feature.properties.date_published);
-        const dateKey = date.toISOString().split('T')[0];
+        const dateKey = getDateKey(date); // Utilisation de la même fonction de clé
         if (dayData.hasOwnProperty(dateKey)) {
             dayData[dateKey]++;
         }
     });
-    
-    // Calculer les stats
+
     const values = Object.values(dayData);
     const totalEvents = values.reduce((a, b) => a + b, 0);
-    const maxEvents = Math.max(...values);
-    const avgEvents = totalEvents / 30;
-    
-    // Déterminer les niveaux (0-4) pour la couleur
+    const maxEvents = values.length ? Math.max(...values) : 0;
+    const avgEvents = daysInMonth ? totalEvents / daysInMonth : 0;
+
     function getLevel(count) {
-        if (count === 0) return 0;
-        if (maxEvents === 0) return 0;
+        if (count === 0 || maxEvents === 0) return 0;
         const ratio = count / maxEvents;
         if (ratio <= 0.25) return 1;
         if (ratio <= 0.50) return 2;
         if (ratio <= 0.75) return 3;
         return 4;
     }
-    
-    // Générer le HTML
-    let html = `
-        <div class="heatmap-container">
-            <div class="heatmap-title">Activité des 30 derniers jours</div>
-            <div class="heatmap-calendar">
-    `;
-    
-    // Générer la grille (5 semaines x 7 jours)
+
+    // ─────────────────────────────────────────────
+    // Construction du calendrier semaine par semaine
+    // ─────────────────────────────────────────────
     const dates = Object.keys(dayData).sort();
-    const startDate = new Date(dates[0]);
-    const startDay = startDate.getDay(); // 0 = dimanche
-    
-    // Organiser en semaines
     const weeks = [];
     let currentWeek = [];
-    
+
     // Remplir les jours vides au début
-    for (let i = 0; i < startDay; i++) {
+    for (let i = 0; i < startDayOfWeek; i++) {
         currentWeek.push(null);
     }
-    
+
     dates.forEach(dateKey => {
         currentWeek.push({
             date: dateKey,
             count: dayData[dateKey],
             level: getLevel(dayData[dateKey])
         });
-        
+
         if (currentWeek.length === 7) {
             weeks.push(currentWeek);
             currentWeek = [];
         }
     });
-    
-    // Compléter la dernière semaine
-    while (currentWeek.length < 7) {
-        currentWeek.push(null);
-    }
+
     if (currentWeek.length > 0) {
+        while (currentWeek.length < 7) {
+            currentWeek.push(null);
+        }
         weeks.push(currentWeek);
     }
-    
-    // Générer le HTML des semaines
+
+    // Génération HTML
+    let html = `
+        <div class="heatmap-container">
+            <div class="heatmap-title">Activité de ${monthName}</div>
+            <div class="heatmap-calendar">
+    `;
+
     weeks.forEach((week, weekIndex) => {
-        // Label de semaine
         html += `<div class="heatmap-week-label">S${weekIndex + 1}</div>`;
-        
-        // Jours de la semaine
+
         week.forEach(day => {
             if (day === null) {
-                html += `<div class="heatmap-day" style="opacity: 0;"></div>`;
+                html += `<div class="heatmap-day empty"></div>`;
             } else {
-                const date = new Date(day.date);
-                const formattedDate = date.toLocaleDateString('fr-FR', {
+                const dateObj = new Date(day.date);
+                const formattedDate = dateObj.toLocaleDateString('fr-FR', {
                     day: 'numeric',
                     month: 'short'
                 });
+
                 html += `
                     <div class="heatmap-day level-${day.level}" 
                          data-date="${day.date}"
-                         data-count="${day.count}"
-                         title="${formattedDate}: ${day.count} événement${day.count > 1 ? 's' : ''}">
+                         data-count="${day.count}">
                     </div>
                 `;
             }
         });
     });
-    
+
     html += `
             </div>
 
-            
             <div class="heatmap-stats">
                 <div class="heatmap-stat">
                     <div class="heatmap-stat-value">${totalEvents}</div>
@@ -1501,34 +1516,50 @@ function createHeatmap(features, countryName) {
             </div>
         </div>
     `;
-    
+
     document.getElementById('country-info').innerHTML = html;
-    
+
     // Ajouter les tooltips
     setTimeout(() => {
         const days = document.querySelectorAll('.heatmap-day[data-date]');
+
+        // Fonction utilitaire pour mettre la première lettre en majuscule
+        const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
         days.forEach(day => {
             day.addEventListener('mouseenter', (e) => {
+                // Nettoyage de sécurité pour éviter les doublons
+                const existing = document.querySelectorAll('.heatmap-tooltip');
+                existing.forEach(t => t.remove());
+
                 const rect = e.target.getBoundingClientRect();
-                const date = new Date(day.dataset.date);
-                const formattedDate = date.toLocaleDateString('fr-FR', {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long'
-                });
+
+                // On récupère la date locale (en évitant le décalage UTC)
+                const dateParts = day.dataset.date.split('-');
+                const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+
+                // Formatage des segments séparément pour les manipuler
+                const weekday = capitalize(date.toLocaleDateString('fr-FR', { weekday: 'long' }));
+                const dayNum = date.getDate();
+                const month = capitalize(date.toLocaleDateString('fr-FR', { month: 'long' }));
+
+                const formattedDate = `${weekday} ${dayNum} ${month}`;
                 const count = day.dataset.count;
-                
+
                 const tooltip = document.createElement('div');
                 tooltip.className = 'heatmap-tooltip';
                 tooltip.style.display = 'block';
                 tooltip.style.left = rect.left + 'px';
-                tooltip.style.top = (rect.top - 30) + 'px';
+                tooltip.style.top = (rect.top - 35) + 'px'; // Légèrement plus haut pour le confort
+
+                // Utilisation de innerHTML ou remplacement du \n par une balise <br> si besoin
+                tooltip.style.whiteSpace = 'pre-line'; // Pour que le \n soit pris en compte
                 tooltip.textContent = `${formattedDate}\n${count} événement${count > 1 ? 's' : ''}`;
+
                 document.body.appendChild(tooltip);
-                
                 day._tooltip = tooltip;
             });
-            
+
             day.addEventListener('mouseleave', () => {
                 if (day._tooltip) {
                     day._tooltip.remove();
@@ -1544,14 +1575,19 @@ async function loadCountryEvents(countryName, period) {
     eventsList.innerHTML = '<div class="feed-loading">Chargement des événements...</div>';
 
     try {
-        const hours = period * 24;
+        // Calculer le début du mois actuel
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const daysSinceStart = Math.ceil((now - firstDayOfMonth) / (1000 * 60 * 60 * 24)) + 1;
+        const hours = daysSinceStart * 24;
+
         const response = await fetch(
             `https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?country=${encodeURIComponent(countryName)}&hours=${hours}`
         );
         const data = await response.json();
 
         if (!data.features || data.features.length === 0) {
-            eventsList.innerHTML = '<div class="feed-empty">Aucun événement trouvé pour ce pays</div>';
+            eventsList.innerHTML = '<div class="feed-empty">Aucun événement</div>';
             return;
         }
 
