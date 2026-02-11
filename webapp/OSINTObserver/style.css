@@ -227,7 +227,7 @@ body {
 }
 
 .time-btn:hover {
-    
+
     border-color: #1d9bf0;
     z-index: 1;
     position: relative;
@@ -263,7 +263,7 @@ body {
 }
 
 .banner-label {
-        border: 1px solid rgb(67, 67, 67);
+    border: 1px solid rgb(67, 67, 67);
 
     position: static;
     color: #e7e9ea;
@@ -366,20 +366,24 @@ body {
 
 .author-filter-btn {
     background-color: rgba(0, 0, 0, 0.7);
-    border: 1px solid rgb(67, 67, 67);
+    border: none;
     color: #e7e9ea;
-    padding: 8px 6px 8px 12px;
-    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
     font-family: monospace;
     font-size: 15px;
     cursor: pointer;
     transition: all 0.2s;
-    white-space: nowrap;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
 }
 
+.author-filter-btn:hover{
+    background-color: rgba(54, 54, 54, 0.7);
+}
 .tweet-feed {
     background-color: rgba(0, 0, 0, 0.7);
     border: 1px solid rgb(97, 97, 97) !important;
@@ -400,21 +404,6 @@ body {
     border: 1px solid rgb(100, 31, 31);
 }
 
-.author-filter-btn:hover {
-    border: 1px solid rgb(31, 59, 100);
-}
-
-.author-filter-btn.has-selection {
-    border: 1px solid rgb(31, 59, 100);
-}
-
-.author-filter-btn svg {
-    transition: transform 0.2s;
-}
-
-.author-filter-btn.open svg {
-    transform: rotate(180deg);
-}
 
 .author-dropdown {
     position: absolute;
@@ -531,8 +520,8 @@ body {
     transition: all 0.2s;
     white-space: nowrap;
     border-radius: 50%;
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     margin-right: 0;
     display: flex;
     align-items: center;
