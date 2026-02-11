@@ -382,8 +382,14 @@ body {
 }
 
 .author-filter-btn:hover{
-    background-color: rgba(54, 54, 54, 0.7);
+    background-color: rgba(36, 36, 36, 0.7);
 }
+
+.author-filter-btn:focus{
+    background-color: rgba(36, 36, 36, 0.7);
+}
+
+
 .tweet-feed {
     background-color: rgba(0, 0, 0, 0.7);
     border: 1px solid rgb(97, 97, 97) !important;
@@ -511,7 +517,7 @@ body {
 
 .rotation-btn {
     background-color: rgba(0, 0, 0, 0.7);
-    border: 1px solid rgb(67, 67, 67);
+    border: none;
     color: #e7e9ea;
     cursor: pointer;
     font-family: monospace;
@@ -1892,7 +1898,7 @@ body {
     justify-content: flex-end;
     padding-right: 6px;
     color: lightgrey;
-    font-size: 9px;
+    font-size: 12px;
 }
 
 .heatmap-day {

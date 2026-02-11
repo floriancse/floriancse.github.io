@@ -23,7 +23,6 @@ let cachedAuthors = {
 };
 
 let isInitialLoadComplete = false;
-let currentImportantIndex = 0;
 
 // Variables pour le panneau de tweets feed
 let isTweetsFeedOpen = false;
@@ -33,8 +32,6 @@ let allTweetsForFeed = [];
 let currentCountryId = null;
 let currentCountryName = null;
 let currentCountryTab = 'summary'; // 'summary' ou 'events'
-let currentCountryPeriod = 1; // Pour le graphique dans l'onglet Résumé
-let countryChart = null;
 
 function updateRotationButton() {
     const btn = document.getElementById("rotationToggleBtn");
@@ -887,8 +884,8 @@ map.on('style.load', async () => {
     await loadAuthors();
 
     const tweetCount = cachedData[currentDays].features ? cachedData[currentDays].features.length : 0;
-    document.getElementById("tweet-count").textContent = `${tweetCount} événement${tweetCount > 1 ? 's' : ''}`;
-
+document.getElementById("tweet-count").innerHTML = 
+    `<i class="fas fa-eye"></i> ${tweetCount} événement${tweetCount > 1 ? 's' : ''}`;
     map.addLayer({
         id: 'pulse-high-importance',
         type: 'circle',
@@ -1338,9 +1335,9 @@ async function loadCountryHeatmap(countryName) {
 
     } catch (error) {
         console.error("Erreur lors du chargement des données:", error);
-        countryInfo.innerHTML = 
-'<div class="feed-empty">Aucun événement</div>';
-        
+        countryInfo.innerHTML =
+            '<div class="feed-empty">Aucun événement</div>';
+
     }
 }
 
