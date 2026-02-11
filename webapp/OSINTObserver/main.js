@@ -473,7 +473,6 @@ function renderAuthorList() {
         });
         authorList.appendChild(item);
     });
-    updateAuthorFilterButton();
 }
 
 function toggleAuthor(author) {
@@ -483,26 +482,9 @@ function toggleAuthor(author) {
         selectedAuthors.add(author);
     }
     loadTweets(currentDays);
-    updateAuthorFilterButton();
 
     if (isTweetsFeedOpen) {
         loadTweetsFeed();
-    }
-}
-
-function updateAuthorFilterButton() {
-    const btn = document.getElementById("authorFilterBtn");
-    const label = document.getElementById("authorFilterLabel");
-    const nbSelected = allAuthors.length - selectedAuthors.size;
-    if (selectedAuthors.size === 0) {
-        label.textContent = `Sources (${nbSelected})`;
-        btn.classList.remove("has-selection");
-    } else if (selectedAuthors.size === allAuthors.length) {
-        label.textContent = "Source (0)";
-        btn.classList.add("has-selection");
-    } else {
-        label.textContent = `Sources (${nbSelected})`;
-        btn.classList.add("has-selection");
     }
 }
 
@@ -755,7 +737,6 @@ function renderLayerList() {
         });
         layerList.appendChild(item);
     });
-    updateLayerFilterButton();
 }
 
 function toggleLayer(layerId) {
@@ -769,23 +750,6 @@ function toggleLayer(layerId) {
     layer.layerIds.forEach(lid => {
         map.setLayoutProperty(lid, 'visibility', visibility);
     });
-    updateLayerFilterButton();
-}
-
-function updateLayerFilterButton() {
-    const btn = document.getElementById("layerFilterBtn");
-    const label = document.getElementById("layerFilterLabel");
-    const nbVisible = allLayers.length - selectedLayers.size;
-    if (selectedLayers.size === 0) {
-        label.textContent = `Couches (${nbVisible})`;
-        btn.classList.remove("has-selection");
-    } else if (selectedLayers.size === allLayers.length) {
-        label.textContent = "Couche (0)";
-        btn.classList.add("has-selection");
-    } else {
-        label.textContent = `Couches (${nbVisible})`;
-        btn.classList.add("has-selection");
-    }
 }
 
 const layerFilterBtn = document.getElementById("layerFilterBtn");

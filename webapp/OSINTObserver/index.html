@@ -10,7 +10,9 @@
     <!-- MapLibre GL -->
     <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.css' />
     <script src='https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.js'></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Chart.js pour les graphiques -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-crosshair"></script>
@@ -45,7 +47,7 @@
             <div id="summary-tab" class="tab-content active">
                 <div id="country-info"></div>
             </div>
-            
+
             <!-- Onglet Événements -->
             <div id="events-tab" class="tab-content">
                 <div id="country-events-list" class="country-events-list">
@@ -88,7 +90,7 @@
 
             <div class="author-filter-container">
                 <button class="author-filter-btn" id="layerFilterBtn">
-                    <span id="layerFilterLabel">Couches</span>
+                    <i class="fas fa-layer-group"></i>
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="6 9 12 15 18 9"></polyline>
@@ -100,8 +102,8 @@
             </div>
 
             <div class="author-filter-container">
-                <button class="author-filter-btn" id="authorFilterBtn">
-                    <span id="authorFilterLabel">Sources</span>
+                <button class="author-filter-btn" id="authorFilterBtn" title="Sources">
+                    <i class="fas fa-rss"></i>
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="6 9 12 15 18 9"></polyline>
