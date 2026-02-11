@@ -23,10 +23,18 @@ let cachedAuthors = {
 };
 
 let isInitialLoadComplete = false;
-
-// Variables pour le carrousel de tweets importants
-let importantTweets = [];
 let currentImportantIndex = 0;
+
+// Variables pour le panneau de tweets feed
+let isTweetsFeedOpen = false;
+let allTweetsForFeed = [];
+
+// Variables pour le panneau pays
+let currentCountryId = null;
+let currentCountryName = null;
+let currentCountryTab = 'summary'; // 'summary' ou 'events'
+let currentCountryPeriod = 1; // Pour le graphique dans l'onglet Résumé
+let countryChart = null;
 
 function updateRotationButton() {
     const btn = document.getElementById("rotationToggleBtn");
@@ -72,7 +80,312 @@ function toggleRotation() {
     }
 }
 
+// Fonction pour basculer le panneau de tweets feed
+function toggleTweetsFeed() {
+    const panel = document.getElementById('tweets-feed-panel');
+    const toggleBtn = document.getElementById('tweets-feed-toggle');
+
+    isTweetsFeedOpen = !isTweetsFeedOpen;
+
+    if (isTweetsFeedOpen) {
+        panel.classList.add('visible');
+        toggleBtn.classList.add('active');
+        loadTweetsFeed();
+    } else {
+        panel.classList.remove('visible');
+        toggleBtn.classList.remove('active');
+    }
+}
+
+// Fonction pour charger les tweets dans le feed
+async function loadTweetsFeed() {
+    const content = document.getElementById('tweets-feed-content');
+    content.innerHTML = '<div class="feed-loading">Chargement des tweets...</div>';
+
+    try {
+        const hours = currentDays * 24;
+        let data;
+
+        if (cachedData[currentDays]) {
+            data = cachedData[currentDays];
+        } else {
+            const response = await fetch(`https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?hours=${hours}`);
+            data = await response.json();
+        }
+
+        // Appliquer les filtres
+        const authorsToShow = allAuthors.filter(a => !selectedAuthors.has(a));
+        let filteredFeatures = data.features.filter(feature => {
+            const authorMatch = authorsToShow.length === 0 ||
+                authorsToShow.length === allAuthors.length ||
+                authorsToShow.includes(feature.properties.author);
+            const searchMatch = currentSearch.trim() === "" ||
+                feature.properties.body.toLowerCase().includes(currentSearch.toLowerCase());
+            return authorMatch && searchMatch;
+        });
+
+        // Trier par date (plus récent en premier)
+        filteredFeatures.sort((a, b) => {
+            const dateA = new Date(a.properties.date_published);
+            const dateB = new Date(b.properties.date_published);
+            return dateB - dateA;
+        });
+
+        allTweetsForFeed = filteredFeatures;
+        renderTweetsFeed(filteredFeatures);
+
+    } catch (error) {
+        console.error("Erreur lors du chargement du feed:", error);
+        content.innerHTML = '<div class="feed-empty">Erreur lors du chargement des tweets</div>';
+    }
+}
+
+// Fonction pour afficher les tweets dans le feed
+function renderTweetsFeed(features) {
+    const content = document.getElementById('tweets-feed-content');
+
+    if (features.length === 0) {
+        content.innerHTML = '<div class="feed-empty">Aucun tweet trouvé pour cette période</div>';
+        return;
+    }
+
+    content.innerHTML = '';
+
+    features.forEach((feature, index) => {
+        const props = feature.properties;
+        const item = createFeedTweetItem(props, feature, index);
+        content.appendChild(item);
+    });
+}
+
+// Fonction pour créer un élément de tweet dans le feed
+function createFeedTweetItem(props, feature, index) {
+    const item = document.createElement('div');
+    item.className = 'feed-tweet-item';
+
+    const tweetDate = new Date(props.date_published);
+    const formattedDate = formatTweetTime(props.date_published);
+
+    // Avatar
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'feed-tweet-avatar';
+    const avatarImg = document.createElement('img');
+    avatarImg.src = `img/${props.author}.jpg`;
+    avatarImg.alt = props.author;
+    avatarImg.onerror = () => {
+        avatarImg.style.display = 'none';
+        avatarDiv.textContent = getAuthorInitials(props.author);
+    };
+    avatarDiv.appendChild(avatarImg);
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'feed-tweet-header';
+
+    const authorSpan = document.createElement('div');
+    authorSpan.className = 'feed-tweet-author';
+    authorSpan.textContent = props.author;
+
+    const timeSpan = document.createElement('div');
+    timeSpan.className = 'feed-tweet-time';
+    timeSpan.textContent = formattedDate;
+
+    header.appendChild(avatarDiv);
+    header.appendChild(authorSpan);
+    header.appendChild(timeSpan);
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'feed-tweet-body';
+    body.textContent = props.body;
+
+    // Images
+    const imagesContainer = document.createElement('div');
+    let images = props.images;
+
+    // Parser les images si c'est une string JSON
+    if (typeof images === 'string') {
+        try {
+            images = JSON.parse(images);
+        } catch (e) {
+            images = [];
+        }
+    }
+
+    if (images && Array.isArray(images) && images.length > 0) {
+        const imageCount = images.length;
+
+        if (imageCount === 1) {
+            imagesContainer.className = 'tweet-card-images single';
+            imagesContainer.innerHTML = `
+                <img src="${images[0]}" alt="Image du tweet" loading="lazy" 
+                     onerror="this.parentElement.style.display='none'">
+            `;
+        } else if (imageCount === 2) {
+            imagesContainer.className = 'tweet-card-images double';
+            imagesContainer.innerHTML = images.map(img => `
+                <img src="${img}" alt="Image du tweet" loading="lazy" 
+                     onerror="this.style.display='none'">
+            `).join('');
+        } else if (imageCount === 3) {
+            imagesContainer.className = 'tweet-card-images triple';
+            imagesContainer.innerHTML = `
+                <img src="${images[0]}" alt="Image du tweet" loading="lazy" class="main-img"
+                     onerror="this.style.display='none'">
+                <div class="secondary-imgs">
+                    <img src="${images[1]}" alt="Image du tweet" loading="lazy"
+                         onerror="this.style.display='none'">
+                    <img src="${images[2]}" alt="Image du tweet" loading="lazy"
+                         onerror="this.style.display='none'">
+                </div>
+            `;
+        } else {
+            const displayImages = images.slice(0, 4);
+            const remainingCount = imageCount - 4;
+            imagesContainer.className = 'tweet-card-images quad';
+            imagesContainer.innerHTML = displayImages.map((img, idx) => `
+                <div class="img-wrapper ${idx === 3 && remainingCount > 0 ? 'has-more' : ''}">
+                    <img src="${img}" alt="Image du tweet" loading="lazy"
+                         onerror="this.style.display='none'">
+                    ${idx === 3 && remainingCount > 0 ? `
+                        <div class="more-overlay">+${remainingCount}</div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+    }
+
+    // Footer
+    const footer = document.createElement('div');
+    footer.className = 'feed-tweet-footer';
+
+    const typologySpan = document.createElement('span');
+    typologySpan.className = `feed-tweet-typology ${props.typology}`;
+    typologySpan.textContent = props.typology;
+
+    // Actions
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'feed-tweet-actions';
+
+    // Vérifier si le tweet a une géolocalisation
+    const hasGeolocation = feature.geometry && feature.geometry.coordinates &&
+        Array.isArray(feature.geometry.coordinates) &&
+        feature.geometry.coordinates.length >= 2;
+
+    // Bouton "Voir le tweet"
+    const tweetLink = document.createElement('a');
+    tweetLink.href = props.url;
+    tweetLink.target = '_blank';
+    tweetLink.className = 'tweet-card-link';
+    tweetLink.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+        Voir le tweet
+    `;
+    tweetLink.onclick = (e) => {
+        e.stopPropagation();
+    };
+
+    actionsDiv.appendChild(tweetLink);
+
+    // Bouton "Voir sur la carte" - seulement si géolocalisation disponible
+    if (hasGeolocation) {
+        const mapBtn = document.createElement('button');
+        mapBtn.className = 'feed-tweet-btn feed-tweet-btn-secondary';
+        mapBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            Voir sur la carte
+        `;
+        mapBtn.onclick = (e) => {
+            e.stopPropagation();
+            stopRotation();
+            const coordinates = feature.geometry.coordinates.slice();
+
+            // Centrer la carte
+            map.flyTo({
+                center: coordinates,
+                zoom: Math.max(map.getZoom(), 5),
+                duration: 1000
+            });
+
+            // Afficher la popup
+            popupPinned = true;
+            currentFeatures = [feature];
+            currentFeatureIndex = 0;
+
+            // Parser les images si nécessaire
+            let popupProps = { ...props };
+            if (typeof popupProps.images === 'string') {
+                try {
+                    popupProps.images = JSON.parse(popupProps.images);
+                } catch (e) {
+                    popupProps.images = [];
+                }
+            }
+
+            showPopupAtIndex(0);
+
+            // Fermer le panneau de feed si sur mobile
+            if (window.innerWidth <= 640) {
+                toggleTweetsFeed();
+            }
+        };
+
+        actionsDiv.appendChild(mapBtn);
+    }
+
+    // Assemblage
+    item.appendChild(header);
+    item.appendChild(body);
+    if (imagesContainer.className) {
+        item.appendChild(imagesContainer);
+    }
+    item.appendChild(footer);
+    item.appendChild(actionsDiv);
+
+    return item;
+}
+
+// Fonction pour formater la date
+function formatTweetTime(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+
+    if (diffMins < 1) return "À l'instant";
+    if (diffMins < 60) return `Il y a ${diffMins} min`;
+    if (diffHours < 24) return `Il y a ${diffHours}h`;
+
+    return date.toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// Fonction pour obtenir les initiales d'un auteur
+function getAuthorInitials(author) {
+    const parts = author.replace('@', '').split(/[_\s]/);
+    if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return author.substring(0, 2).toUpperCase();
+}
+
 document.getElementById("rotationToggleBtn").addEventListener("click", toggleRotation);
+
+// Event listener pour le bouton de toggle du feed
+document.getElementById("tweets-feed-toggle").addEventListener("click", toggleTweetsFeed);
+document.getElementById("close-tweets-feed").addEventListener("click", toggleTweetsFeed);
 
 document.addEventListener("DOMContentLoaded", async () => {
     const response = await fetch("https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/last_tweet_date");
@@ -86,23 +399,20 @@ async function preloadAllData() {
     const periods = [1, 7, 30];
 
     try {
-        // Charger les auteurs pour chaque période (maintenant en heures)
         const authorPromises = periods.map(async (days) => {
-            const hours = days * 24; // Convertir en heures
+            const hours = days * 24;
             const response = await fetch(`https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/authors?hours=${hours}`);
             const data = await response.json();
             cachedAuthors[days] = data.authors || [];
         });
 
-        // Charger les tweets pour chaque période (maintenant en heures)
         const tweetPromises = periods.map(async (days) => {
-            const hours = days * 24; // Convertir en heures
+            const hours = days * 24;
             const response = await fetch(`https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?hours=${hours}`);
             const data = await response.json();
             cachedData[days] = data;
         });
 
-        // Attendre que tout soit chargé
         await Promise.all([...authorPromises, ...tweetPromises]);
 
         isInitialLoadComplete = true;
@@ -113,13 +423,11 @@ async function preloadAllData() {
 
 async function loadAuthors() {
     try {
-        const hours = currentDays * 24; // Convertir en heures
+        const hours = currentDays * 24;
 
-        // Utiliser les données en cache si disponibles
         if (cachedAuthors[currentDays]) {
             allAuthors = cachedAuthors[currentDays];
         } else {
-            // Fallback si pas en cache
             const response = await fetch(`https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/authors?hours=${hours}`);
             const data = await response.json();
             allAuthors = data.authors || [];
@@ -176,6 +484,10 @@ function toggleAuthor(author) {
     }
     loadTweets(currentDays);
     updateAuthorFilterButton();
+
+    if (isTweetsFeedOpen) {
+        loadTweetsFeed();
+    }
 }
 
 function updateAuthorFilterButton() {
@@ -196,13 +508,11 @@ function updateAuthorFilterButton() {
 
 async function loadTweets(days) {
     let data;
-    const hours = days * 24; // Convertir en heures
+    const hours = days * 24;
 
-    // Utiliser les données en cache si disponibles
     if (cachedData[days]) {
         data = cachedData[days];
     } else {
-        // Fallback si pas en cache
         const params = new URLSearchParams({ hours: hours });
         const response = await fetch(
             `https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?${params.toString()}`
@@ -211,7 +521,6 @@ async function loadTweets(days) {
         cachedData[days] = data;
     }
 
-    // Appliquer les filtres de recherche et d'auteurs
     let filteredData = { ...data };
 
     const authorsToShow = allAuthors.filter(a => !selectedAuthors.has(a));
@@ -220,12 +529,10 @@ async function loadTweets(days) {
         filteredData.features = [];
     } else {
         filteredData.features = data.features.filter(feature => {
-            // Filtre par auteur
             const authorMatch = authorsToShow.length === 0 ||
                 authorsToShow.length === allAuthors.length ||
                 authorsToShow.includes(feature.properties.author);
 
-            // Filtre par recherche
             const searchMatch = currentSearch.trim() === "" ||
                 feature.properties.body.toLowerCase().includes(currentSearch.toLowerCase());
 
@@ -241,6 +548,10 @@ async function loadTweets(days) {
     document.getElementById("tweet-count").textContent =
         `${tweetCount} événement${tweetCount > 1 ? 's' : ''}`;
     currentDays = days;
+
+    if (isTweetsFeedOpen) {
+        loadTweetsFeed();
+    }
 }
 
 const authorFilterBtn = document.getElementById("authorFilterBtn");
@@ -290,13 +601,11 @@ function createPopupContent(props, showNavigation = false, currentIndex = 0, tot
         minute: '2-digit'
     });
 
-    // Gestion des images
     let imagesHtml = '';
     if (props.images && Array.isArray(props.images) && props.images.length > 0) {
         const imageCount = props.images.length;
 
         if (imageCount === 1) {
-            // Une seule image - affichage simple
             imagesHtml = `
                 <div class="tweet-card-images single">
                     <img src="${props.images[0]}" alt="Image du tweet" loading="lazy" 
@@ -304,7 +613,6 @@ function createPopupContent(props, showNavigation = false, currentIndex = 0, tot
                 </div>
             `;
         } else if (imageCount === 2) {
-            // Deux images - côte à côte
             imagesHtml = `
                 <div class="tweet-card-images double">
                     ${props.images.map(img => `
@@ -314,7 +622,6 @@ function createPopupContent(props, showNavigation = false, currentIndex = 0, tot
                 </div>
             `;
         } else if (imageCount === 3) {
-            // Trois images - une grande à gauche, deux petites à droite
             imagesHtml = `
                 <div class="tweet-card-images triple">
                     <img src="${props.images[0]}" alt="Image du tweet" loading="lazy" class="main-img"
@@ -328,7 +635,6 @@ function createPopupContent(props, showNavigation = false, currentIndex = 0, tot
                 </div>
             `;
         } else {
-            // 4 images ou plus - grille 2x2 avec indicateur "+X" si plus de 4
             const displayImages = props.images.slice(0, 4);
             const remainingCount = imageCount - 4;
 
@@ -380,17 +686,14 @@ function createPopupContent(props, showNavigation = false, currentIndex = 0, tot
 `;
 }
 
-// Remplacer showPopupAtIndex complètement
-showPopupAtIndex = function(index) {
+showPopupAtIndex = function (index) {
     if (currentFeatures.length === 0) return;
     currentFeatureIndex = index;
     const feature = currentFeatures[currentFeatureIndex];
     const coordinates = feature.geometry.coordinates.slice();
-    
-    // IMPORTANT : Parser les propriétés si elles sont en string
+
     let props = feature.properties;
-    
-    // Si images est une string, la parser
+
     if (typeof props.images === 'string') {
         try {
             props.images = JSON.parse(props.images);
@@ -398,10 +701,9 @@ showPopupAtIndex = function(index) {
             props.images = [];
         }
     }
-    
+
     const htmlContent = createPopupContent(props, popupPinned, currentFeatureIndex, currentFeatures.length);
     popup.setLngLat(coordinates).setHTML(htmlContent).addTo(map);
-    
 };
 
 window.nextTweet = () => {
@@ -504,30 +806,27 @@ document.addEventListener("click", (e) => {
 map.on('style.load', async () => {
     map.setProjection({ type: 'globe' });
 
-    // Créer une image de hachures
     const size = 64;
     const hatchImage = new Uint8Array(size * size * 4);
 
     for (let x = 0; x < size; x++) {
         for (let y = 0; y < size; y++) {
             const i = (y * size + x) * 4;
-            // Créer des lignes diagonales
             const isDiagonal = (x + y) % 8 < 2;
             if (isDiagonal) {
-                hatchImage[i] = 136;     // R (rouge foncé #880000)
-                hatchImage[i + 1] = 0;   // G
-                hatchImage[i + 2] = 0;   // B
-                hatchImage[i + 3] = 255; // A (opaque)
+                hatchImage[i] = 136;
+                hatchImage[i + 1] = 0;
+                hatchImage[i + 2] = 0;
+                hatchImage[i + 3] = 255;
             } else {
                 hatchImage[i] = 0;
                 hatchImage[i + 1] = 0;
                 hatchImage[i + 2] = 0;
-                hatchImage[i + 3] = 0;   // Transparent
+                hatchImage[i + 3] = 0;
             }
         }
     }
 
-    // Ajouter l'image au style de la carte
     map.addImage('hatch-pattern', {
         width: size,
         height: size,
@@ -539,7 +838,12 @@ map.on('style.load', async () => {
         data: 'https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/disputed_area.geojson'
     });
 
-    // Utiliser le pattern pour le fill
+    map.addSource('world_countries', {
+        type: 'geojson',
+        data: 'https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/world_countries.geojson',
+        generateId: true
+    });
+
     map.addLayer({
         id: 'disputed_area_fill',
         type: 'fill',
@@ -561,10 +865,56 @@ map.on('style.load', async () => {
         }
     });
 
-    // Précharger toutes les données en parallèle
+    map.addLayer({
+        id: 'world_countries_fill',
+        type: 'fill',
+        source: 'world_countries',
+        paint: {
+            'fill-color': [
+                'case',
+                ['boolean', ['feature-state', 'hover'], false],
+                'rgba(123, 123, 123, 0.2)',
+                'rgba(0,0,0,0)'
+            ],
+        }
+    });
+
+    let hoveredCountryId = null;
+
+    map.on('mousemove', 'world_countries_fill', (e) => {
+        if (e.features.length > 0) {
+            const feature = e.features[0];
+
+            if (hoveredCountryId !== null && hoveredCountryId !== feature.id) {
+                map.setFeatureState(
+                    { source: 'world_countries', id: hoveredCountryId },
+                    { hover: false }
+                );
+            }
+
+            map.setFeatureState(
+                { source: 'world_countries', id: feature.id },
+                { hover: true }
+            );
+
+            hoveredCountryId = feature.id;
+            map.getCanvas().style.cursor = 'pointer';
+        }
+    });
+
+    map.on('mouseleave', 'world_countries_fill', () => {
+        if (hoveredCountryId !== null) {
+            map.setFeatureState(
+                { source: 'world_countries', id: hoveredCountryId },
+                { hover: false }
+            );
+        }
+        hoveredCountryId = null;
+        map.getCanvas().style.cursor = '';
+    });
+
     await preloadAllData();
 
-    // Initialiser avec la période par défaut (1 jour)
     map.addSource('tweets', {
         type: 'geojson',
         data: cachedData[currentDays]
@@ -575,7 +925,6 @@ map.on('style.load', async () => {
     const tweetCount = cachedData[currentDays].features ? cachedData[currentDays].features.length : 0;
     document.getElementById("tweet-count").textContent = `${tweetCount} événement${tweetCount > 1 ? 's' : ''}`;
 
-    // ─── Couche pulse (anneau qui pulse) ───────────────────────────────────────
     map.addLayer({
         id: 'pulse-high-importance',
         type: 'circle',
@@ -590,12 +939,12 @@ map.on('style.load', async () => {
                 'interpolate',
                 ['linear'],
                 ['zoom'],
-                2, 0.05,     // Très discret à zoom 2 (dézoom max typique)
-                5, 0.15,     // Commence à être visible
+                2, 0.05,
+                5, 0.15,
                 8, 0.25,
-                12, 0.4      // Plus présent en zoom moyen
+                12, 0.4
             ],
-            'circle-radius': 20,  // ← base plus grande (sera augmentée dynamiquement)
+            'circle-radius': 20,
             'circle-stroke-color': [
                 'match',
                 ['get', 'typology'],
@@ -607,16 +956,15 @@ map.on('style.load', async () => {
                 'interpolate',
                 ['linear'],
                 ['zoom'],
-                2, 1.5,   // stroke fin quand dézoomé
+                2, 1.5,
                 6, 2.5,
-                10, 4     // plus épais quand zoomé
+                10, 4
             ],
-            'circle-stroke-opacity': 0   // animé dans la boucle
+            'circle-stroke-opacity': 0
         },
-        minzoom: 0   // ← baisse à 3 ou 2 pour voir de très loin (attention perf si trop de points !)
+        minzoom: 0
     });
 
-    // Couche des points principaux (MIL rouge)
     map.addLayer({
         id: 'tweets_points',
         type: 'circle',
@@ -652,7 +1000,6 @@ map.on('style.load', async () => {
         source: 'tweets',
         filter: ['==', ['get', 'typology'], 'OTHER'],
         paint: {
-            // Intensité basée sur l'importance
             'heatmap-weight': [
                 'interpolate',
                 ['linear'],
@@ -661,7 +1008,6 @@ map.on('style.load', async () => {
                 5, 1
             ],
 
-            // Intensité globale en fonction du zoom
             'heatmap-intensity': [
                 'interpolate',
                 ['linear'],
@@ -670,7 +1016,6 @@ map.on('style.load', async () => {
                 9, 3
             ],
 
-            // Gradient de couleurs (du transparent au bleu foncé)
             'heatmap-color': [
                 'interpolate',
                 ['linear'],
@@ -683,7 +1028,6 @@ map.on('style.load', async () => {
                 1, '#b4cff1'
             ],
 
-            // Rayon des points de chaleur
             'heatmap-radius': [
                 'interpolate',
                 ['linear'],
@@ -692,7 +1036,6 @@ map.on('style.load', async () => {
                 9, 15
             ],
 
-            // Opacité de la heatmap selon le zoom
             'heatmap-opacity': [
                 'interpolate',
                 ['linear'],
@@ -727,7 +1070,6 @@ map.on('style.load', async () => {
         }
     });
 
-    // ===== POINTS INDIVIDUELS (INVISIBLES mais interactifs) =====
     map.addLayer({
         id: 'tweets_hover_area',
         type: 'circle',
@@ -740,7 +1082,6 @@ map.on('style.load', async () => {
 
     renderLayerList();
 
-    // ===== INTERACTIONS =====
     map.on('mouseenter', 'tweets_hover_area', (e) => {
         if (popupPinned) return;
         map.getCanvas().style.cursor = 'pointer';
@@ -749,7 +1090,6 @@ map.on('style.load', async () => {
             layers: ['tweets_hover_area']
         });
 
-        // Trier par importance
         features.sort((a, b) => {
             const importanceA = parseFloat(a.properties.importance) || 0;
             const importanceB = parseFloat(b.properties.importance) || 0;
@@ -757,7 +1097,7 @@ map.on('style.load', async () => {
         });
 
         if (features.length === 0) return;
-        const feature = features[0]; // Prend le plus important
+        const feature = features[0];
         const coordinates = feature.geometry.coordinates.slice();
         const props = feature.properties;
         while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
@@ -775,9 +1115,9 @@ map.on('style.load', async () => {
     });
 
     map.on('click', 'tweets_hover_area', (e) => {
-        popupPinned = true;
+        e.preventDefault();
 
-        // AJOUT : Fermer la popup existante pour forcer la régénération
+        popupPinned = true;
         popup.remove();
 
         const point = e.point;
@@ -785,7 +1125,6 @@ map.on('style.load', async () => {
             layers: ['tweets_hover_area']
         });
 
-        // Trier par importance décroissante
         currentFeatures.sort((a, b) => {
             const importanceA = parseFloat(a.properties.importance) || 0;
             const importanceB = parseFloat(b.properties.importance) || 0;
@@ -805,24 +1144,18 @@ map.on('style.load', async () => {
     map.on('mousedown', () => clearInterval(rotationInterval));
     startRotation();
 
-    // ─── Animation pulse ───────────────────────────────────────────────────────
     let animationFrameId = null;
 
     function animatePulse() {
         const now = performance.now() / 1000;
         const zoom = map.getZoom();
 
-
         const duration = 2.8;
         const phase = (now % duration) / duration;
 
-
         const maxOpacity = zoom < 6 ? 0.9 : zoom < 9 ? 0.85 : 0.8;
 
-
-        // ─── DEAD ZONE AU DÉBUT ───
-        const appearStart = 0.12; // 12% du cycle invisible
-
+        const appearStart = 0.12;
 
         let opacity = 0;
         if (phase > appearStart) {
@@ -830,9 +1163,7 @@ map.on('style.load', async () => {
             opacity = maxOpacity * (1 - t);
         }
 
-
         if (zoom < 3) opacity *= 0.6;
-
 
         const baseRadius = [
             2, 7,
@@ -846,27 +1177,20 @@ map.on('style.load', async () => {
             return acc;
         }, 3);
 
-
         const maxGrowFactor = zoom < 6 ? 15 : zoom < 9 ? 8 : 10;
         const maxGrow = baseRadius * maxGrowFactor;
 
-
-        // Rayon démarre immédiatement
         const radius = baseRadius + (maxGrow - baseRadius) * phase;
-
 
         map.setPaintProperty('pulse-high-importance', 'circle-stroke-opacity', opacity);
         map.setPaintProperty('pulse-high-importance', 'circle-opacity', opacity);
         map.setPaintProperty('pulse-high-importance', 'circle-radius', radius);
 
-
         animationFrameId = requestAnimationFrame(animatePulse);
     }
 
-    // Démarre l'animation
     animatePulse();
 
-    // Arrête/reprend sur visibility change (économie batterie/CPU)
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
@@ -905,361 +1229,349 @@ searchInput.addEventListener("input", () => {
     }, 300);
 });
 
-// Variables pour le bandeau
-let pendingTweetsUpdate = null;
-let isBannerVisible = true;
 
-// Fonction pour basculer la visibilité du bandeau
-function toggleBanner() {
-    const banner = document.getElementById("bottomBanner");
-    const toggleBtn = document.getElementById("bannerToggle");
-
-    if (isBannerVisible) {
-        banner.style.transform = 'translateY(100%)';
-        toggleBtn.textContent = '▼ Afficher';
-        isBannerVisible = false;
-    } else {
-        banner.style.transform = 'translateY(0)';
-        toggleBtn.textContent = '× Fermer';
-        isBannerVisible = true;
-    }
-}
-
-async function fetchNewTweets() {
-    try {
-        const res = await fetch("https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/random_tweets");
-        if (!res.ok) throw new Error("Erreur fetch tweets");
-
-        const { tweets } = await res.json();
-        if (!tweets?.length) return null;
-
-        return tweets;
-    } catch (err) {
-        console.warn("Impossible de récupérer les nouveaux tweets", err);
-        return null;
-    }
-}
-
-function generateTweetsHtml(tweets) {
-    return tweets.map(tweet => {
-        const timeStr = new Date(tweet.date_published).toLocaleTimeString('fr-FR', {
-            hour: '2-digit',
-            minute: '2-digit'
+// Gestion des onglets Résumé / Événements
+document.addEventListener('DOMContentLoaded', () => {
+    const panelTabs = document.querySelectorAll('.panel-tab[data-tab]');
+    
+    panelTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.dataset.tab;
+            
+            // Mettre à jour les onglets actifs
+            panelTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Mettre à jour le contenu visible
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            const targetTab = document.getElementById(`${tabName}-tab`);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+            
+            // Sauvegarder l'onglet actuel
+            currentCountryTab = tabName;
+            
+            // Charger les données appropriées (toujours 30j)
+            if (currentCountryName) {
+                if (tabName === 'summary') {
+                    loadCountryHeatmap(currentCountryName);
+                } else if (tabName === 'events') {
+                    loadCountryEvents(currentCountryName, 30);
+                }
+            }
         });
+    });
+});
 
-        const avatarHtml = tweet.author && tweet.author.trim()
-            ? `<img src="img/${tweet.author}.jpg" class="avatar-small" alt="@${tweet.author}"
-                 onerror="this.classList.add('missing'); this.src=''; this.textContent='${tweet.author.charAt(0).toUpperCase()}'">`
-            : `<div class="avatar-small missing">${tweet.author?.charAt(0)?.toUpperCase() || '?'}</div>`;
+// Click sur un pays
+map.on('click', 'world_countries_fill', (e) => {
+    if (!e.features || e.features.length === 0) return;
 
-        return `
-            <div class="tweet-marquee-item"
-                 role="link"
-                 tabindex="0"
-                 data-url="${tweet.url}">
-                 
-                ${avatarHtml}
-                <span class="tweet-author">${tweet.author || '—'}</span>
-                <span class="tweet-text">
-                    ${escapeHtml(tweet.body.substring(0, 280))}
-                    ${tweet.body.length > 280 ? '…' : ''}
-                    <span class="tweet-link-indicator"> ↗</span>
-                </span>
-                <span class="tweet-time">${timeStr}</span>
+    // Vérifier s'il y a un tweet au même endroit
+    const tweetsAtPoint = map.queryRenderedFeatures(e.point, {
+        layers: ['tweets_hover_area']
+    });
+
+    if (tweetsAtPoint && tweetsAtPoint.length > 0) {
+        return;
+    }
+
+    const feature = e.features[0];
+    const countryName = feature.properties.name || feature.properties.SOVEREIGNT || feature.properties.NAME || 'Pays inconnu';
+    const countryId = feature.id || feature.properties.id;
+
+    // Mettre à jour le titre
+    document.getElementById('country-title').textContent = "Vue générale : " + countryName;
+
+    // Réinitialiser à l'onglet Résumé
+    document.querySelectorAll('.panel-tab[data-tab]').forEach(tab => {
+        if (tab.dataset.tab === 'summary') {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+    
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById('summary-tab').classList.add('active');
+    
+    currentCountryTab = 'summary';
+    currentCountryId = countryId;
+    currentCountryName = countryName;
+
+    // Charger la heatmap
+    loadCountryHeatmap(countryName);
+
+    // Ouvrir le panneau
+    const panel = document.getElementById('country-panel');
+    panel.classList.add('visible');
+});
+
+// Fermeture du panneau
+document.getElementById('close-panel').addEventListener('click', () => {
+    document.getElementById('country-panel').classList.remove('visible');
+    currentCountryId = null;
+    currentCountryName = null;
+});
+
+// Fermer si on clique ailleurs sur la map
+map.on('click', (e) => {
+    const tweetsAtPoint = map.queryRenderedFeatures(e.point, {
+        layers: ['tweets_hover_area']
+    });
+
+    if (tweetsAtPoint && tweetsAtPoint.length > 0) {
+        return;
+    }
+
+    const features = map.queryRenderedFeatures(e.point, { layers: ['world_countries_fill'] });
+    if (features.length === 0) {
+        document.getElementById('country-panel').classList.remove('visible');
+        currentCountryId = null;
+        currentCountryName = null;
+    }
+});
+
+// Curseur au survol
+map.on('mouseenter', 'world_countries_fill', () => {
+    map.getCanvas().style.cursor = 'pointer';
+});
+map.on('mouseleave', 'world_countries_fill', () => {
+    map.getCanvas().style.cursor = '';
+});
+
+// ======================================
+// HEATMAP CALENDRIER (30 JOURS)
+// ======================================
+
+async function loadCountryHeatmap(countryName) {
+    const countryInfo = document.getElementById('country-info');
+    countryInfo.innerHTML = '<div class="feed-loading">Chargement des données...</div>';
+
+    try {
+        const hours = 30 * 24;
+
+        const response = await fetch(
+            `https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?country=${encodeURIComponent(countryName)}&hours=${hours}`
+        );
+        const data = await response.json();
+
+        createHeatmap(data.features, countryName);
+
+    } catch (error) {
+        console.error("Erreur lors du chargement des données:", error);
+        countryInfo.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #ef4444;">
+                ❌ Erreur lors du chargement des données
             </div>
         `;
-    }).join('');
-}
-
-async function updateMarquee() {
-    const track = document.getElementById("marqueeTrack");
-    if (!track || track.dataset.initialized) return;
-
-    const tweets = await fetchNewTweets();
-    if (!tweets) return;
-
-    applyMarqueeContent(track, tweets);
-
-    track.dataset.initialized = "true";
-}
-
-function applyMarqueeContent(track, tweets) {
-    const itemsHtml = generateTweetsHtml(tweets);
-    track.innerHTML = itemsHtml + itemsHtml;
-
-    // attendre le rendu réel
-    requestAnimationFrame(() => {
-        const totalWidth = track.scrollWidth / 2;
-        track.style.setProperty('--scroll-width', `${totalWidth}px`);
-    });
-}
-
-function handleAnimationIteration() {
-    if (!pendingTweetsUpdate) return;
-
-    const track = document.getElementById("marqueeTrack");
-    if (!track) return;
-
-    applyMarqueeContent(track, pendingTweetsUpdate);
-    pendingTweetsUpdate = null;
-}
-
-async function scheduleMarqueeUpdate() {
-    const newTweets = await fetchNewTweets();
-    if (newTweets) {
-        pendingTweetsUpdate = newTweets;
     }
 }
 
-// Fonction utilitaire pour sécuriser l'affichage
-function escapeHtml(unsafe) {
-    return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-// Lancement initial + refresh périodique
-document.addEventListener("DOMContentLoaded", async () => {
-
-    const toggleBtn = document.getElementById("bannerToggle");
-    if (toggleBtn) {
-        toggleBtn.addEventListener("click", toggleBanner);
-    }
-
-    await updateMarquee();
-
-    const track = document.getElementById("marqueeTrack");
-    if (track) {
-        track.addEventListener("animationiteration", handleAnimationIteration);
-    }
-
-    setInterval(scheduleMarqueeUpdate, 30000);
-});
-
-document.addEventListener("click", (e) => {
-    const item = e.target.closest(".tweet-marquee-item");
-    if (!item) return;
-
-    const url = item.dataset.url;
-    if (!url) return;
-
-    window.open(url, "_blank", "noopener,noreferrer");
-});
-
-// Fonction pour formater la date
-function formatTweetTime(dateString) {
-    const date = new Date(dateString);
+function createHeatmap(features, countryName) {
+    // Préparer les données par jour
     const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-
-    if (diffMins < 1) return "À l'instant";
-    if (diffMins < 60) return `Il y a ${diffMins} min`;
-    if (diffHours < 24) return `Il y a ${diffHours}h`;
-
-    return date.toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-// Fonction pour obtenir les initiales d'un auteur
-function getAuthorInitials(author) {
-    const parts = author.replace('@', '').split(/[_\s]/);
-    if (parts.length >= 2) {
-        return (parts[0][0] + parts[1][0]).toUpperCase();
+    const dayData = {};
+    
+    // Initialiser les 30 derniers jours à 0
+    for (let i = 29; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        const dateKey = date.toISOString().split('T')[0];
+        dayData[dateKey] = 0;
     }
-    return author.substring(0, 2).toUpperCase();
-}
-
-function getProfileImagePath(author) {
-    // Nettoyer le nom d'auteur et créer le chemin
-    const cleanAuthor = author.startsWith('@') ? author : `@${author}`;
-    return `img/${cleanAuthor}.jpg`;
-}
-
-// Fonction pour créer le panneau avec carrousel
-function createImportantTweetsPanel() {
-    const panel = document.createElement('div');
-    panel.className = 'important-tweets-panel';
-    panel.id = 'importantTweetsPanel';
-
-    panel.innerHTML = `
-
-    <div class="panel-content" id="panelContent">
-        <div class="no-tweets-message">Aucun événement important ces dernières 24 heures.</div>
-    </div>
-`;
-
-    document.body.appendChild(panel);
-
-    // Ajouter l'événement pour le bouton fermer
-
-
-    return panel;
-}
-
-// Navigation pour les tweets importants
-window.prevImportantTweet = () => {
-    if (importantTweets.length > 0) {
-        currentImportantIndex = (currentImportantIndex - 1 + importantTweets.length) % importantTweets.length;
-        displayCurrentImportantTweet();
-    }
-};
-
-window.nextImportantTweet = () => {
-    if (importantTweets.length > 0) {
-        currentImportantIndex = (currentImportantIndex + 1) % importantTweets.length;
-        displayCurrentImportantTweet();
-    }
-};
-
-// Fonction pour afficher le tweet actuel
-function displayCurrentImportantTweet() {
-    if (importantTweets.length === 0) return;
-
-    const content = document.getElementById('panelContent');
-    const tweet = importantTweets[currentImportantIndex];
-
-    const hasLocation = tweet.lat && tweet.long;
-
-    // Gestion des images pour le panneau important
-    let imagesHtml = '';
-    if (tweet.images && Array.isArray(tweet.images) && tweet.images.length > 0) {
-        const imageCount = tweet.images.length;
-
-        if (imageCount === 1) {
-            imagesHtml = `
-                <div class="tweet-card-images single">
-                    <img src="${tweet.images[0]}" alt="Image du tweet" loading="lazy" 
-                         onerror="this.parentElement.style.display='none'">
-                </div>
-            `;
-        } else if (imageCount === 2) {
-            imagesHtml = `
-                <div class="tweet-card-images double">
-                    ${tweet.images.map(img => `
-                        <img src="${img}" alt="Image du tweet" loading="lazy" 
-                             onerror="this.style.display='none'">
-                    `).join('')}
-                </div>
-            `;
-        } else {
-            // Pour 3+ images dans le panneau, on utilise le layout triple
-            imagesHtml = `
-                <div class="tweet-card-images triple">
-                    <img src="${tweet.images[0]}" alt="Image du tweet" loading="lazy" class="main-img"
-                         onerror="this.style.display='none'">
-                    <div class="secondary-imgs">
-                        ${tweet.images.slice(1, 3).map(img => `
-                            <img src="${img}" alt="Image du tweet" loading="lazy"
-                                 onerror="this.style.display='none'">
-                        `).join('')}
-                    </div>
-                </div>
-            `;
+    
+    // Compter les événements par jour
+    features.forEach(feature => {
+        const date = new Date(feature.properties.date_published);
+        const dateKey = date.toISOString().split('T')[0];
+        if (dayData.hasOwnProperty(dateKey)) {
+            dayData[dateKey]++;
         }
+    });
+    
+    // Calculer les stats
+    const values = Object.values(dayData);
+    const totalEvents = values.reduce((a, b) => a + b, 0);
+    const maxEvents = Math.max(...values);
+    const avgEvents = totalEvents / 30;
+    
+    // Déterminer les niveaux (0-4) pour la couleur
+    function getLevel(count) {
+        if (count === 0) return 0;
+        if (maxEvents === 0) return 0;
+        const ratio = count / maxEvents;
+        if (ratio <= 0.25) return 1;
+        if (ratio <= 0.50) return 2;
+        if (ratio <= 0.75) return 3;
+        return 4;
     }
-
-    content.innerHTML = `
-        <div class="important-tweet-card">
-            <div class="tweet-card-header">
-                <div class="tweet-card-avatar">
-                    <img src="${getProfileImagePath(tweet.author)}" 
-                         alt="${tweet.author}" 
-                         onerror="this.style.display='none'; this.parentElement.textContent='${getAuthorInitials(tweet.author)}';">
-                </div>
-                <div class="tweet-card-author">${tweet.author}</div>
-                <span class="important-badge">Événement important</span>
-                <div class="tweet-card-time">${formatTweetTime(tweet.date_published)}</div>
+    
+    // Générer le HTML
+    let html = `
+        <div class="heatmap-container">
+            <div class="heatmap-title">Activité des 30 derniers jours</div>
+            <div class="heatmap-calendar">
+    `;
+    
+    // Générer la grille (5 semaines x 7 jours)
+    const dates = Object.keys(dayData).sort();
+    const startDate = new Date(dates[0]);
+    const startDay = startDate.getDay(); // 0 = dimanche
+    
+    // Organiser en semaines
+    const weeks = [];
+    let currentWeek = [];
+    
+    // Remplir les jours vides au début
+    for (let i = 0; i < startDay; i++) {
+        currentWeek.push(null);
+    }
+    
+    dates.forEach(dateKey => {
+        currentWeek.push({
+            date: dateKey,
+            count: dayData[dateKey],
+            level: getLevel(dayData[dateKey])
+        });
+        
+        if (currentWeek.length === 7) {
+            weeks.push(currentWeek);
+            currentWeek = [];
+        }
+    });
+    
+    // Compléter la dernière semaine
+    while (currentWeek.length < 7) {
+        currentWeek.push(null);
+    }
+    if (currentWeek.length > 0) {
+        weeks.push(currentWeek);
+    }
+    
+    // Générer le HTML des semaines
+    weeks.forEach((week, weekIndex) => {
+        // Label de semaine
+        html += `<div class="heatmap-week-label">S${weekIndex + 1}</div>`;
+        
+        // Jours de la semaine
+        week.forEach(day => {
+            if (day === null) {
+                html += `<div class="heatmap-day" style="opacity: 0;"></div>`;
+            } else {
+                const date = new Date(day.date);
+                const formattedDate = date.toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'short'
+                });
+                html += `
+                    <div class="heatmap-day level-${day.level}" 
+                         data-date="${day.date}"
+                         data-count="${day.count}"
+                         title="${formattedDate}: ${day.count} événement${day.count > 1 ? 's' : ''}">
+                    </div>
+                `;
+            }
+        });
+    });
+    
+    html += `
             </div>
-            <div class="tweet-card-body">${truncateText(tweet.body, 280)}</div>
-            ${imagesHtml}
-            <div class="tweet-card-actions">
-                <a href="${tweet.url}" target="_blank" rel="noopener noreferrer" class="tweet-card-link">
-                    <span>Voir le tweet ↗</span>
-                </a>
-                ${hasLocation ? `
-                <button class="tweet-map-btn" data-lat="${tweet.lat}" data-lng="${tweet.long}">
-                    <span>Voir sur la carte</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                    </svg>
-                </button>
-                ` : ''}
-                ${importantTweets.length > 1 ? `
-                <div class="tweet-nav-controls">
-                    <span class="tweet-card-nav-count">${currentImportantIndex + 1}/${importantTweets.length}</span>
-                    <button onclick="window.prevImportantTweet()" class="tweet-card-nav-btn">←</button>
-                    <button onclick="window.nextImportantTweet()" class="tweet-card-nav-btn">→</button>
+
+            
+            <div class="heatmap-stats">
+                <div class="heatmap-stat">
+                    <div class="heatmap-stat-value">${totalEvents}</div>
+                    <div class="heatmap-stat-label">Total événements</div>
                 </div>
-                ` : ''}
+                <div class="heatmap-stat">
+                    <div class="heatmap-stat-value">${maxEvents}</div>
+                    <div class="heatmap-stat-label">Pic journalier</div>
+                </div>
+                <div class="heatmap-stat">
+                    <div class="heatmap-stat-value">${avgEvents.toFixed(1)}</div>
+                    <div class="heatmap-stat-label">Moyenne / jour</div>
+                </div>
             </div>
         </div>
     `;
-
-    // Ajouter l'événement pour le bouton "Voir sur la carte" du tweet actuel
-    const mapBtn = content.querySelector('.tweet-map-btn');
-    if (mapBtn) {
-        mapBtn.addEventListener('click', (e) => {
-            const lat = parseFloat(e.currentTarget.getAttribute('data-lat'));
-            const lng = parseFloat(e.currentTarget.getAttribute('data-lng'));
-            stopRotation();
-
-            if (map) {
-                map.flyTo({
-                    center: [lng, lat],
-                    zoom: 6,
-                    essential: true
+    
+    document.getElementById('country-info').innerHTML = html;
+    
+    // Ajouter les tooltips
+    setTimeout(() => {
+        const days = document.querySelectorAll('.heatmap-day[data-date]');
+        days.forEach(day => {
+            day.addEventListener('mouseenter', (e) => {
+                const rect = e.target.getBoundingClientRect();
+                const date = new Date(day.dataset.date);
+                const formattedDate = date.toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long'
                 });
-            }
+                const count = day.dataset.count;
+                
+                const tooltip = document.createElement('div');
+                tooltip.className = 'heatmap-tooltip';
+                tooltip.style.display = 'block';
+                tooltip.style.left = rect.left + 'px';
+                tooltip.style.top = (rect.top - 30) + 'px';
+                tooltip.textContent = `${formattedDate}\n${count} événement${count > 1 ? 's' : ''}`;
+                document.body.appendChild(tooltip);
+                
+                day._tooltip = tooltip;
+            });
+            
+            day.addEventListener('mouseleave', () => {
+                if (day._tooltip) {
+                    day._tooltip.remove();
+                    day._tooltip = null;
+                }
+            });
         });
-    }
+    }, 100);
 }
 
-// Fonction principale pour charger et afficher
-async function loadImportantTweets() {
+async function loadCountryEvents(countryName, period) {
+    const eventsList = document.getElementById('country-events-list');
+    eventsList.innerHTML = '<div class="feed-loading">Chargement des événements...</div>';
+
     try {
-        const response = await fetch('https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/important_tweets');
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        const hours = period * 24;
+        const response = await fetch(
+            `https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?country=${encodeURIComponent(countryName)}&hours=${hours}`
+        );
         const data = await response.json();
 
-        // Stocker les tweets
-        importantTweets = data.tweets;
-        currentImportantIndex = 0;
+        if (!data.features || data.features.length === 0) {
+            eventsList.innerHTML = '<div class="feed-empty">Aucun événement trouvé pour ce pays</div>';
+            return;
+        }
 
-        // Créer le panneau
-        createImportantTweetsPanel();
+        // Trier par date (plus récent en premier)
+        data.features.sort((a, b) => {
+            const dateA = new Date(a.properties.date_published);
+            const dateB = new Date(b.properties.date_published);
+            return dateB - dateA;
+        });
 
-        // Afficher le premier tweet
-        displayCurrentImportantTweet();
+        eventsList.innerHTML = '';
+
+        data.features.forEach((feature, index) => {
+            const props = feature.properties;
+            const item = createFeedTweetItem(props, feature, index);
+            eventsList.appendChild(item);
+        });
 
     } catch (error) {
-        console.error('Erreur lors de la récupération des tweets:', error);
-
-        // Afficher l'erreur dans le panneau si il existe
-        const content = document.getElementById('panelContent');
-        if (content) {
-            content.innerHTML = `
-                <div class="no-tweets-message">
-                    Erreur de chargement<br>
-                    <small style="color: #dc2626;">${error.message}</small>
-                </div>
-            `;
-        }
+        console.error("Erreur lors du chargement des événements:", error);
+        eventsList.innerHTML = '<div class="feed-empty">Erreur lors du chargement des événements</div>';
     }
 }
-
-// Appeler la fonction au chargement de la page
-loadImportantTweets();

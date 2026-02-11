@@ -6,14 +6,22 @@
     <title>OSINT Observer</title>
     <link rel="icon" href="img/favicon_io/favicon.ico" type="image/x-icon">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- MapLibre GL -->
     <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.css' />
     <script src='https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.js'></script>
+
+    <!-- Chart.js pour les graphiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-crosshair"></script>
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Julius+Sans+One&display=swap"
         rel="stylesheet">
 
+    <!-- Styles -->
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -22,9 +30,52 @@
     <!-- Carte -->
     <div id="map"></div>
 
+    <!-- Panneau pays (droite) -->
+    <div id="country-panel" class="country-panel hidden">
+        <div class="panel-header">
+            <h3 id="country-title">Pays sélectionné</h3>
+            <button id="close-panel" class="close-btn">×</button>
+        </div>
+        <div class="panel-tabs">
+            <button class="panel-tab active" data-tab="summary">Résumé</button>
+            <button class="panel-tab" data-tab="events">Événements</button>
+        </div>
+        <div class="panel-content">
+            <!-- Onglet Résumé -->
+            <div id="summary-tab" class="tab-content active">
+                <div id="country-info"></div>
+            </div>
+            
+            <!-- Onglet Événements -->
+            <div id="events-tab" class="tab-content">
+                <div id="country-events-list" class="country-events-list">
+                    <div class="feed-loading">Chargement des événements...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panneau tweets feed (gauche) -->
+    <div id="tweets-feed-panel" class="tweets-feed-panel">
+        <div class="panel-header">
+            <div class="panel-titles">
+                <h2>Feed OSINT</h2>
+                <h3>Derniers tweets par ordre chronologique</h3>
+            </div>
+            <button id="close-tweets-feed" class="close-btn">×</button>
+        </div>
+        <div class="tweets-feed-content" id="tweets-feed-content">
+            <div class="feed-loading">Chargement des tweets...</div>
+        </div>
+    </div>
+
     <div class="top-bar">
         <div class="left-controls">
             <button id="rotationToggleBtn" class="rotation-btn active">⏸</button>
+            <div class="banner-label" id="tweets-feed-toggle">
+                Derniers tweets
+            </div>
+
             <div class="time-group">
                 <button class="time-btn active" data-days="1">1 j.</button>
                 <button class="time-btn" data-days="7">7 j.</button>
@@ -73,20 +124,9 @@
         </div>
     </div>
 
-
-
     <div id="last-update"></div>
-    <div class="bottom-banner" id="bottomBanner">
-        <div class="banner-content">
-            <div class="banner-label">Derniers tweets <span class="live-dot">🔴</span></div>
 
-            <div class="marquee-wrapper">
-                <div class="marquee-track" id="marqueeTrack">
-                    <!-- les tweets seront injectés ici par JS -->
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Scripts -->
     <script src="main.js"></script>
 
 </body>
