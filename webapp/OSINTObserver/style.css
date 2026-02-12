@@ -367,7 +367,7 @@ body {
     position: absolute;
     top: 20px;
     left: 20px;
-    right: 20px;
+    right: 16px;
     z-index: 1000;
     display: flex;
     justify-content: space-between;
@@ -1788,7 +1788,7 @@ h3 {
 /* Conteneur du bouton en bas à droite */
 .bottom-right-controls {
     position: fixed;
-    bottom: 56px;                    /* au-dessus du bandeau inférieur de 40px + marge */
+    bottom: 30px;                    /* au-dessus du bandeau inférieur de 40px + marge */
     right: 16px;
     z-index: 950;                    /* au-dessus de la map, mais en dessous des panneaux */
 }
