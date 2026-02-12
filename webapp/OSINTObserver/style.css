@@ -260,13 +260,13 @@ body {
 }
 
 .time-btn:hover {
-    border-color: #1d9bf0;
+    border-color: #6b6b6b;
     z-index: 1;
 }
 
 .time-btn.active {
-    border-color: #1d9bf0;
-    background-color: rgba(29, 155, 240, 0.18);
+    border-color: #6b6b6b;
+    background-color: rgba(84, 84, 84, 1);
     /* petit fond bleu très léger → plus joli */
     color: #fff;
     z-index: 2;
@@ -378,7 +378,7 @@ body {
 .right-controls {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 10px;
 }
 
 .search-input-wrapper {
@@ -1816,7 +1816,7 @@ h3 {
     position: absolute;
     bottom: 100%;                    /* collé au-dessus du bouton */
     right: 0;
-    width: 250px;                    /* largeur fixe raisonnable pour vertical */
+    width: 220px;                    /* largeur fixe raisonnable pour vertical */
     max-height: 70vh;
     overflow-y: auto;
     transform: translateY(-12px);    /* petit espace entre bouton et menu */
@@ -1827,6 +1827,7 @@ h3 {
     z-index: 1100;
     display: none;
     backdrop-filter: blur(8px);
+    padding: 10px;
 }
 
 .options-menu.vertical.visible {
