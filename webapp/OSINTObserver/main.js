@@ -159,7 +159,10 @@ function renderTweetsFeed(features) {
 function createFeedTweetItem(props, feature, index) {
     const item = document.createElement('div');
     item.className = 'feed-tweet-item';
+    const importanceStr = String(props.importance || '0').trim();
+    const isImportant = importanceStr === '4' || importanceStr === '5';
 
+    item.className = 'feed-tweet-item' + (isImportant ? ' important-tweet' : '');
     const tweetDate = new Date(props.date_published);
     const formattedDate = formatTweetTime(props.date_published);
 
@@ -569,6 +572,11 @@ function truncateText(text, maxLength = 500) {
 }
 
 function createPopupContent(props, showNavigation = false, currentIndex = 0, totalCount = 1) {
+    const importanceStr = String(props.importance || '0').trim();
+    const isImportant = importanceStr === '4' || importanceStr === '5';
+
+    const importantClass = isImportant ? ' important-tweet' : '';
+
     const tweetDate = new Date(props.date_published);
     const formattedDate = tweetDate.toLocaleDateString('fr-FR', {
         year: 'numeric',
@@ -634,7 +642,7 @@ function createPopupContent(props, showNavigation = false, currentIndex = 0, tot
     }
 
     return `
-    <div class="tweet-card">
+    <div class="tweet-card${importantClass}">        
         <button onclick="window.closePopup()" class="tweet-card-close" style="display: ${popupPinned ? 'flex' : 'none'}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -884,7 +892,7 @@ map.on('style.load', async () => {
     await loadAuthors();
 
     const tweetCount = cachedData[currentDays].features ? cachedData[currentDays].features.length : 0;
-document.getElementById("tweet-count").innerHTML = `
+    document.getElementById("tweet-count").innerHTML = `
     <i class="fas fa-eye eye-icon"></i> 
     ${tweetCount} événement${tweetCount > 1 ? 's' : ''}
 `;
