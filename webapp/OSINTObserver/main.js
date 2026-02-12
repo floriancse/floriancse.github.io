@@ -553,7 +553,7 @@ document.addEventListener("click", (e) => {
 
 const map = new maplibregl.Map({
     container: 'map',
-    style: 'https://api.maptiler.com/maps/dataviz-dark/style.json?key=MIeaKd18gACAhOFV3PZu',
+    style: 'https://api.maptiler.com/maps/base-v4-dark/style.json?key=MIeaKd18gACAhOFV3PZu',
     zoom: 2.2,
     center: [2, 40],
     attributionControl: false

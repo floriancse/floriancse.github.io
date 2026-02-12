@@ -1,13 +1,37 @@
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .bottom-banner {
+        padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    }
+
+    #map {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+}
+
+/* Évite que 100dvh soit trop grand quand barre d’outils iOS visible */
+html,
+body {
+    height: 100dvh;
+    min-height: -webkit-fill-available;
+    /* très important sur iOS */
+}
+
+.tweets-feed-panel.visible,
+.country-panel.visible,
+.important-tweets-panel {
+    max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 100px);
+    height: auto !important;
+}
+
 body {
     margin: 0;
     padding: 0;
-    background-color: #141519;
+    background-color: #1e201c;
     height: 100dvh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
-
 
 #map {
     height: calc(100dvh - 40px);
@@ -199,19 +223,28 @@ body {
 }
 
 .time-btn {
-    background: transparent;
-    border: none;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1.5px solid transparent;
+    /* on met la bordure de base ici → plus de décalage au hover */
     color: #e7e9ea;
-    padding: 8px 8px;
     cursor: pointer;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace;
     font-size: 14px;
     font-weight: 500;
-    font-family: monospace !important;
-    background-color: rgba(0, 0, 0, 0.7);
+    padding: 8px 12px;
+    /* ← la ligne la plus importante ! */
     border-radius: 0;
+    white-space: nowrap;
+    transition:
+        border-color 0.15s ease,
+        background-color 0.15s ease,
+        z-index 0s;
+    /* z-index n'a pas besoin de transition */
+    position: relative;
+    /* pour que le z-index fonctionne bien */
 }
 
+/* Coins arrondis seulement sur les extrémités */
 .time-btn:first-child {
     border-top-left-radius: 20px;
     border-bottom-left-radius: 20px;
@@ -222,65 +255,93 @@ body {
     border-bottom-right-radius: 20px;
 }
 
+/* Légère superposition pour éviter le double bord visible */
 .time-btn+.time-btn {
     margin-left: -1px;
 }
 
 .time-btn:hover {
-    border: 1.5px solid #1d9bf0;
+    border-color: #1d9bf0;
     z-index: 1;
-    position: relative;
 }
 
 .time-btn.active {
-    border: 1.5px solid #1d9bf0;
+    border-color: #1d9bf0;
+    background-color: rgba(29, 155, 240, 0.18);
+    /* petit fond bleu très léger → plus joli */
     color: #fff;
     z-index: 2;
-    position: relative;
 }
 
+/* Conteneur */
 .time-selector {
+    position: absolute;
     top: 20px;
     left: 20px;
     z-index: 1000;
     display: flex;
     align-items: center;
+    /* très important pour aligner les hauteurs */
     gap: 10px;
-    border-radius: 12px;
 }
 
 #tweet-count {
-    position: static;
+    gap: 8px
+}
+
+/* Les autres boutons/labels – on harmonise */
+#tweet-count,
+.banner-label {
     color: #e7e9ea;
     padding: 8px 12px;
     border-radius: 50px;
-    font-family: monospace;
+    /* tweet-count */
+    /* ou border-radius: 8px; pour .banner-label si vous voulez différencier */
+    font-family: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace;
     font-size: 14px;
     background-color: rgba(0, 0, 0, 0.7);
     white-space: nowrap;
+    border: 1.5px solid transparent;
+    /* cohérence avec .time-btn */
+    transition: all 0.2s ease;
 }
 
+/* .banner-label a quelques spécificités */
 .banner-label {
-    position: static;
-    color: #e7e9ea;
-    padding: 8px 12px;
     border-radius: 8px;
-    font-family: monospace;
-    font-size: 14px;
-    background-color: rgba(0, 0, 0, 0.7);
-    white-space: nowrap;
     cursor: pointer;
-    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.banner-label svg,
+.banner-label i {
+    flex-shrink: 0;
 }
 
 .banner-label:hover {
-    background-color: rgba(29, 155, 240, 1);
-    border: 1px solid #1d9bf0;
+    background-color: rgba(29, 155, 240, 0.9);
+    border-color: #1d9bf0;
 }
 
 .banner-label.active {
+    /* si vous utilisez .active aussi ici */
     background-color: rgba(29, 155, 240, 1);
-    border: 1px solid #1d9bf0;
+    border-color: #1d9bf0;
+    color: white;
+}
+
+.time-btn,
+#tweet-count,
+.banner-label {
+    height: 37px;
+    padding: 8px 12px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .search-container {
@@ -376,14 +437,13 @@ body {
     justify-content: center;
 }
 
-.author-filter-btn:hover{
+.author-filter-btn:hover {
     background-color: rgba(36, 36, 36, 0.7);
 }
 
-.author-filter-btn:focus{
+.author-filter-btn:focus {
     background-color: rgba(36, 36, 36, 0.7);
 }
-
 
 .tweet-feed {
     background-color: rgba(0, 0, 0, 0.7);
@@ -405,12 +465,12 @@ body {
     border: 1px solid rgb(100, 31, 31);
 }
 
-
 .author-dropdown {
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.95);
+    border: 1px solid #2f3336;
     border-radius: 12px;
     max-height: 400px;
     overflow-y: auto;
@@ -525,12 +585,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-
     line-height: 1;
     font-size: 17px;
-    /* ← petit ajustement de taille souvent magique */
     transform: translateY(-1px);
-    /* ou -0.5px / 1px — micro-ajustement */
 }
 
 .rotation-btn.active {
@@ -567,6 +624,10 @@ body {
 .panel-titles {
     display: flex;
     flex-direction: column;
+}
+
+h3 {
+    margin: 0;
 }
 
 .panel-titles h3 {
@@ -1072,493 +1133,9 @@ body {
     font-size: 13px;
 }
 
-/* Tablette et petits écrans (< 900px) */
-@media (max-width: 900px) {
 
-    /* Top bar en colonne */
-    .top-bar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-        top: 10px;
-        left: 10px;
-        right: 10px;
-    }
-
-    .left-controls,
-    .right-controls {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    /* Time buttons plus petits */
-    .time-btn {
-        padding: 6px 6px;
-        font-size: 11px;
-    }
-
-    /* Champ de recherche plus petit */
-    #tweet-search {
-        width: 100%;
-        max-width: 250px;
-        font-size: 13px;
-    }
-
-    /* Tweet count plus compact */
-    #tweet-count {
-        font-size: 12px;
-        padding: 6px 8px;
-    }
-
-    /* Panneau important tweets */
-    .important-tweets-panel {
-        left: 10px;
-        right: 10px;
-        max-width: none;
-        bottom: 7vh;
-    }
-
-    /* Last update */
-    #last-update {
-        right: 10px;
-        font-size: 11px;
-    }
-
-    /* Tweet card dans popup */
-    .tweet-card {
-        width: 90vw;
-        max-width: 320px;
-    }
-
-    /* Marquee items */
-    .tweet-marquee-item {
-        max-width: 340px;
-        min-width: 240px;
-        gap: 8px;
-        padding: 0 10px;
-    }
-
-    .tweet-marquee-item .tweet-author,
-    .tweet-marquee-item .tweet-text {
-        font-size: 12.5px;
-    }
-
-    /* Banner label */
-    .banner-label {
-        padding: 0 12px 0 16px;
-        font-size: 12px;
-    }
-
-    .bottom-banner {
-        font-size: 11px;
-        height: 45px;
-        min-height: 45px;
-    }
-
-    /* Ajuster la position des éléments */
-    .important-tweets-panel {
-        bottom: 50px;
-    }
-
-    #last-update {
-        bottom: 50px;
-    }
-
-    /* Panneau tweets feed responsive */
-    .tweets-feed-panel {
-        width: 90%;
-        max-width: 400px;
-    }
-}
-
-/* Mobile (< 640px) */
-@media (max-width: 640px) {
-
-
-    /* Top bar en 2 lignes */
-    .top-bar {
-        flex-direction: column;
-        gap: 8px;
-        top: 8px;
-        left: 8px;
-        right: 8px;
-        align-items: stretch;
-    }
-
-    /* Ligne 1 : Rotation + Time selector */
-    .left-controls {
-        flex-wrap: nowrap;
-        gap: 8px;
-        width: 100%;
-        order: 1;
-    }
-
-    /* Ligne 2 : Count + Search + Author filter */
-    .right-controls {
-        gap: 8px;
-        flex-wrap: nowrap;
-        overflow: hidden;
-        max-width: 100%;
-        width: 100%;
-        order: 2;
-    }
-
-    /* Bouton rotation en premier, compact */
-    .rotation-btn {
-        width: 36px;
-        height: 36px;
-        padding: 6px;
-        flex-shrink: 0;
-        order: 1;
-    }
-
-    /* Time group prend le reste de la ligne 1 */
-    .time-group {
-        flex: 1;
-        display: flex;
-        order: 2;
-    }
-
-    .time-btn {
-        flex: 1;
-        padding: 6px 4px;
-        font-size: 10px;
-    }
-
-    /* Tweet count visible et élargi sur ligne 2 */
-    #tweet-count {
-        display: block;
-        font-size: 11px;
-        padding: 6px 8px;
-        flex-shrink: 0;
-        white-space: nowrap;
-    }
-
-    /* Author dropdown sur mobile - position fixe pour éviter les problèmes */
-    .author-filter-container {
-        position: relative;
-    }
-
-    .author-dropdown {
-        position: fixed;
-        top: auto;
-        bottom: auto;
-        right: 8px;
-        left: 8px;
-        max-width: none;
-        width: auto;
-        max-height: 60vh;
-        z-index: 10001;
-        transform: translateY(0);
-    }
-
-    /* S'assurer que tous les menus déroulants s'affichent correctement */
-    [class*="dropdown"],
-    [class*="menu"],
-    .maplibregl-popup {
-        max-width: calc(100vw - 16px) !important;
-    }
-
-    /* Ajuster les items pour mobile */
-    .author-item {
-        padding: 10px 12px;
-        font-size: 14px;
-        touch-action: manipulation;
-    }
-
-    .author-item img {
-        width: 24px;
-        height: 24px;
-    }
-
-    /* Search input élargi */
-    #tweet-search {
-        width: 100%;
-        font-size: 12px;
-        padding: 6px 28px 6px 8px;
-    }
-
-    .search-input-wrapper {
-        flex: 1;
-        min-width: 0;
-    }
-
-    /* Author filter button élargi */
-    .author-filter-btn {
-        padding: 6px 10px;
-        font-size: 12px;
-        flex-shrink: 0;
-        white-space: nowrap;
-    }
-
-    /* Panel important tweets full width */
-    .important-tweets-panel {
-        left: 8px;
-        right: 8px;
-        bottom: 7vh;
-    }
-
-    .panel-content {
-        padding: 8px;
-    }
-
-    .tweet-card-body {
-        font-size: 12px;
-    }
-
-    /* Tweet card header - réorganisation pour éviter superposition */
-    .tweet-card-header {
-        gap: 6px;
-        flex-wrap: wrap;
-        align-items: flex-start;
-    }
-
-    .important-badge {
-        flex-basis: 100%;
-        width: 100%;
-        text-align: center;
-        font-size: 10px;
-        padding: 3px 6px;
-        margin-bottom: 4px;
-        display: none !important;
-    }
-
-    .tweet-card-avatar {
-        width: 28px;
-        height: 28px;
-        font-size: 12px;
-    }
-
-    .tweet-card-author {
-        flex: 1;
-        min-width: 0;
-        font-size: 13px;
-        max-width: calc(100% - 120px);
-    }
-
-    .tweet-card-time {
-        font-size: 10px;
-        padding-right: 24px;
-    }
-
-    /* Tweet card popup réduite */
-    .tweet-card {
-        width: calc(100vw - 40px);
-        max-width: 280px;
-    }
-
-    .tweet-card-body {
-        font-size: 12px;
-        line-height: 1.4;
-    }
-
-    .tweet-card-link,
-    .tweet-map-btn {
-        font-size: 11px;
-        padding: 3px 6px;
-    }
-
-    /* Last update */
-    #last-update {
-        font-size: 10px;
-        right: 8px;
-        bottom: 7vh;
-    }
-
-    /* Banner */
-    .banner-label {
-        padding: 0 8px 0 12px;
-        font-size: 11px;
-    }
-
-    .bottom-banner {
-        font-size: 10px;
-        height: 40px;
-        min-height: 40px;
-    }
-
-    /* Map prend plus de place */
-    #map {
-        height: calc(100vh - 40px);
-    }
-
-    /* Ajuster les éléments positionnés par rapport au bandeau */
-    .important-tweets-panel {
-        bottom: 45px;
-    }
-
-    #last-update {
-        bottom: 45px;
-    }
-
-    /* Marquee items encore plus petits */
-    .tweet-marquee-item {
-        min-width: 200px;
-        max-width: 280px;
-        font-size: 11px;
-        padding: 0 6px;
-    }
-
-    .tweet-marquee-item .avatar-small {
-        width: 20px;
-        height: 20px;
-        font-size: 11px;
-    }
-
-    .tweet-marquee-item .tweet-time {
-        font-size: 9px;
-    }
-
-    .tweet-marquee-item .tweet-author,
-    .tweet-marquee-item .tweet-text {
-        font-size: 11px;
-    }
-
-    /* Author dropdown full width */
-    .author-dropdown {
-        left: 0;
-        right: 0;
-        width: auto;
-    }
-
-    /* Panneau tweets feed plein écran sur mobile */
-    .tweets-feed-panel {
-        width: 100%;
-        left: -100%;
-        border-radius: 0;
-        top: 0;
-        bottom: 0;
-    }
-
-    .tweets-feed-panel.visible {
-        left: 0;
-    }
-}
-
-/* Très petits écrans (< 400px) */
-@media (max-width: 400px) {
-    .top-bar {
-        gap: 6px;
-    }
-
-    /* Ligne 1 */
-    .left-controls {
-        gap: 6px;
-    }
-
-    .rotation-btn {
-        width: 32px;
-        height: 32px;
-        padding: 5px;
-        font-size: 12px;
-    }
-
-    .time-btn {
-        font-size: 9px;
-        padding: 5px 2px;
-        min-width: 0;
-    }
-
-    /* Ligne 2 */
-    .right-controls {
-        gap: 6px;
-    }
-
-    #tweet-count {
-        font-size: 10px;
-        padding: 5px 6px;
-    }
-
-    #tweet-search {
-        font-size: 11px;
-        padding: 5px 24px 5px 6px;
-    }
-
-    .search-icon {
-        right: 6px;
-        font-size: 12px;
-    }
-
-    .author-filter-btn {
-        padding: 5px 8px;
-        font-size: 11px;
-    }
-
-    .author-filter-btn svg {
-        width: 14px;
-        height: 14px;
-    }
-
-    /* Tweet card */
-    .tweet-card {
-        padding: 8px;
-        width: calc(100vw - 40px);
-        max-width: 260px;
-    }
-
-    .tweet-card-header {
-        gap: 6px;
-    }
-
-    .tweet-card-avatar {
-        width: 26px;
-        height: 26px;
-        font-size: 11px;
-    }
-
-    .tweet-card-author {
-        font-size: 12px;
-        max-width: calc(100% - 80px);
-    }
-
-    .tweet-card-body {
-        font-size: 11px;
-    }
-
-    /* Important badge encore plus petit */
-    .important-badge {
-        font-size: 9px;
-        padding: 2px 4px;
-    }
-}
-
-/* Paysage mobile (hauteur < 500px) */
-@media (max-height: 500px) {
-    .important-badge {
-        display: none;
-    }
-
-    /* Réduire les hauteurs fixes */
-    .bottom-banner {
-        height: 44px;
-    }
-
-    #map {
-        height: calc(100dvh - 44px);
-    }
-
-    .important-tweets-panel {
-        bottom: 45px;
-        max-height: 200px;
-    }
-
-    #last-update {
-        bottom: 45px;
-    }
-
-    /* Top bar plus compact */
-    .top-bar {
-        top: 5px;
-        gap: 5px;
-    }
-
-    .time-btn {
-        padding: 4px 6px;
-    }
-}
 
 /* Styles pour les images dans les tweet cards */
-
 .tweet-card-images {
     margin: 12px 0;
     border-radius: 12px;
@@ -1566,7 +1143,6 @@ body {
     background: #1a1a1a;
 }
 
-/* Une seule image */
 .tweet-card-images.single {
     max-height: 400px;
 }
@@ -1579,7 +1155,6 @@ body {
     max-height: 400px;
 }
 
-/* Deux images côte à côte */
 .tweet-card-images.double {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1594,7 +1169,6 @@ body {
     display: block;
 }
 
-/* Trois images - layout spécial */
 .tweet-card-images.triple {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1622,7 +1196,6 @@ body {
     flex: 1;
 }
 
-/* Quatre images ou plus - grille 2x2 */
 .tweet-card-images.quad {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1645,7 +1218,6 @@ body {
     display: block;
 }
 
-/* Overlay pour "+X images" */
 .tweet-card-images.quad .img-wrapper.has-more::after {
     content: '';
     position: absolute;
@@ -1670,15 +1242,11 @@ body {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
-/* Hover effect pour toutes les images */
 .tweet-card-images img {
     transition: transform 0.2s ease;
     cursor: pointer;
 }
 
-
-
-/* Responsive - Mobile */
 @media (max-width: 640px) {
     .tweet-card-images.single {
         max-height: 250px;
@@ -1699,7 +1267,6 @@ body {
     }
 }
 
-/* Animation de chargement pour les images */
 .tweet-card-images img {
     background: linear-gradient(90deg,
             #1a1a1a 25%,
@@ -1724,7 +1291,6 @@ body {
     }
 }
 
-/* Erreur de chargement d'image */
 .tweet-card-images img[style*="display: none"] {
     display: none !important;
 }
@@ -1750,22 +1316,6 @@ body {
 
 .country-panel.visible {
     right: 20px;
-}
-
-.panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    background: rgba(0, 0, 0, 1);
-    border-bottom: None;
-}
-
-.panel-header h3 {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 500;
-    color: #fff;
 }
 
 .close-btn {
@@ -1806,7 +1356,6 @@ body {
     background: #555;
 }
 
-/* Styles pour les onglets du country-panel */
 .panel-tabs {
     display: flex;
     background: rgba(0, 0, 0, 1);
@@ -1849,7 +1398,6 @@ body {
     width: 1px;
 }
 
-/* Onglets de contenu */
 .tab-content {
     display: none;
     flex-direction: column;
@@ -1861,12 +1409,10 @@ body {
     display: flex;
 }
 
-/* Contenu de l'onglet Résumé */
 #country-info {
     padding: 16px;
     font-size: 14px;
 }
-
 
 .heatmap-title {
     color: #e5e7eb;
@@ -1962,7 +1508,6 @@ body {
     white-space: pre-line;
     display: none;
     font-family: monospace;
-
 }
 
 .heatmap-stats {
@@ -1981,9 +1526,8 @@ body {
 .heatmap-stat-value {
     font-size: 18px;
     font-weight: 600;
-    color: #10b981;
+    color: lightgrey;
     font-family: monospace;
-    color: lightgrey
 }
 
 .heatmap-stat-label {
@@ -1993,7 +1537,6 @@ body {
     font-family: monospace;
 }
 
-/* Liste des événements */
 .country-events-list {
     flex: 1;
     overflow-y: auto;
@@ -2017,11 +1560,10 @@ body {
     background: #555;
 }
 
-/* Mobile : panneau qui monte du bas, plus compact */
 @media (max-width: 768px) {
     .country-panel {
         top: auto;
-        bottom: 70px;
+        bottom: 40px;
         left: 8px;
         right: 8px;
         width: auto;
@@ -2066,12 +1608,7 @@ body {
     background-color: #212121;
 }
 
-.time-filter-btn-panel:hover {
-    background-color: #212121;
-}
-
 .time-filter-btn-panel.active {
-    /* ← Changé de :focus à .active */
     background-color: #00183d;
     color: oklch(70.7% .165 254.624);
 }
@@ -2082,19 +1619,31 @@ body {
 }
 
 @keyframes eyeFadeLoop {
-    0%   { opacity: 0.4; transform: scale(0.92); }
-    40%  { opacity: 1;   transform: scale(1.08); }
-    60%  { opacity: 1;   transform: scale(1.05); }
-    100% { opacity: 0.4; transform: scale(0.92); }
+    0% {
+        opacity: 0.4;
+        transform: scale(0.92);
+    }
+
+    40% {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+
+    60% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    100% {
+        opacity: 0.4;
+        transform: scale(0.92);
+    }
 }
 
-/* ─────────────────────────────────────────────
-   Tweets IMPORTANT (importance 4 ou 5)
-───────────────────────────────────────────── */
-
+/* Tweets IMPORTANT (importance 4 ou 5) */
 .important-tweet {
     position: relative;
-    border: 2px solid #ff3b5c !important;     /* rouge vif type MIL */
+    border: 2px solid #ff3b5c !important;
     box-shadow: 0 0 0 3px rgba(255, 59, 92, 0.18);
 }
 
@@ -2113,25 +1662,22 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
     z-index: 5;
 }
 
-/* Variante un peu plus "urgent" (optionnel) */
 .important-tweet:hover {
     border-color: #ff4d6a;
     box-shadow: 0 0 0 4px rgba(255, 77, 106, 0.25);
 }
 
-/* Pour le feed (gauche) */
 .feed-tweet-item.important-tweet {
-    background: rgba(40, 0, 8, 0.4);           /* fond très légèrement rouge sombre */
+    background: rgba(40, 0, 8, 0.4);
     border-color: #ff3b5c;
 }
 
-/* Popup sur la carte */
 .tweet-card.important-tweet {
-    background: rgb(18, 8, 12);                /* fond un peu plus sombre/rougeâtre */
+    background: rgb(18, 8, 12);
     border: 2.5px solid #ff3b5c;
     box-shadow: 0 0 12px rgba(255, 59, 92, 0.35);
 }
