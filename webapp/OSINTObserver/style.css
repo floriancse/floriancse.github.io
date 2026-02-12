@@ -892,7 +892,7 @@ h3 {
     bottom: 90px;
     left: -450px;
     width: 450px;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 1);
     border-left: none;
     border-radius: 0 12px 12px 0;
     color: #e7e9ea;
