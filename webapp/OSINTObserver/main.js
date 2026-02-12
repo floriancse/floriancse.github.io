@@ -527,8 +527,12 @@ async function loadTweets(days) {
     }
 
     const tweetCount = filteredData.features ? filteredData.features.length : 0;
-    document.getElementById("tweet-count").textContent =
-        `${tweetCount} événement${tweetCount > 1 ? 's' : ''}`;
+    const tweetCountElement = document.getElementById("tweet-count");
+
+    tweetCountElement.innerHTML = `
+    <i class="fas fa-eye eye-icon"></i> 
+    ${tweetCount} événement${tweetCount > 1 ? 's' : ''}
+`;
     currentDays = days;
 
     if (isTweetsFeedOpen) {
@@ -1580,11 +1584,11 @@ function renderAuthorList() {
     allAuthors.forEach(author => {
         const item = document.createElement("div");
         item.className = "author-item";
-        
+
         const cb = document.createElement("input");
         cb.type = "checkbox";
         cb.checked = !selectedAuthors.has(author);
-        
+
         cb.addEventListener("change", () => {
             if (cb.checked) {
                 selectedAuthors.delete(author);
