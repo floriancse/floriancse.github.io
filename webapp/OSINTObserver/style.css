@@ -1314,7 +1314,7 @@ h3 {
     color: #e7e9ea;
     font-family: monospace;
     transition: right 0.35s ease;
-    z-index: 950;
+    z-index: 999;
     display: flex;
     flex-direction: column;
     overflow: hidden;
