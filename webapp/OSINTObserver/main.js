@@ -884,8 +884,11 @@ map.on('style.load', async () => {
     await loadAuthors();
 
     const tweetCount = cachedData[currentDays].features ? cachedData[currentDays].features.length : 0;
-document.getElementById("tweet-count").innerHTML = 
-    `<i class="fas fa-eye"></i> ${tweetCount} événement${tweetCount > 1 ? 's' : ''}`;
+document.getElementById("tweet-count").innerHTML = `
+    <i class="fas fa-eye eye-icon"></i> 
+    ${tweetCount} événement${tweetCount > 1 ? 's' : ''}
+`;
+
     map.addLayer({
         id: 'pulse-high-importance',
         type: 'circle',

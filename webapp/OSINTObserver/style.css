@@ -200,7 +200,7 @@ body {
 
 .time-btn {
     background: transparent;
-    border: 1px solid rgb(67, 67, 67);
+    border: none;
     color: #e7e9ea;
     padding: 8px 8px;
     cursor: pointer;
@@ -227,14 +227,13 @@ body {
 }
 
 .time-btn:hover {
-
-    border-color: #1d9bf0;
+    border: 1.5px solid #1d9bf0;
     z-index: 1;
     position: relative;
 }
 
 .time-btn.active {
-    border-color: #1d9bf0;
+    border: 1.5px solid #1d9bf0;
     color: #fff;
     z-index: 2;
     position: relative;
@@ -262,12 +261,10 @@ body {
 }
 
 .banner-label {
-    border: 1px solid rgb(67, 67, 67);
-
     position: static;
     color: #e7e9ea;
     padding: 8px 12px;
-    border-radius: 50px;
+    border-radius: 8px;
     font-family: monospace;
     font-size: 14px;
     background-color: rgba(0, 0, 0, 0.7);
@@ -282,7 +279,6 @@ body {
 }
 
 .banner-label.active {
-    background-color: #1d9bf0;
     background-color: rgba(29, 155, 240, 1);
     border: 1px solid #1d9bf0;
 }
@@ -331,7 +327,7 @@ body {
 
 #tweet-search {
     background-color: rgba(0, 0, 0, 0.7);
-    border: 1px solid rgb(67, 67, 67);
+    border: none;
     color: #e7e9ea;
     padding: 8px;
     border-radius: 8px;
@@ -2082,3 +2078,16 @@ body {
     background-color: #00183d;
     color: oklch(70.7% .165 254.624);
 }
+
+.eye-icon {
+    display: inline-block;
+    animation: eyeFadeLoop 3s infinite ease-in-out;
+}
+
+@keyframes eyeFadeLoop {
+    0%   { opacity: 0.4; transform: scale(0.92); }
+    40%  { opacity: 1;   transform: scale(1.08); }
+    60%  { opacity: 1;   transform: scale(1.05); }
+    100% { opacity: 0.4; transform: scale(0.92); }
+}
+
