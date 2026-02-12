@@ -1820,7 +1820,7 @@ h3 {
     max-height: 70vh;
     overflow-y: auto;
     transform: translateY(-12px);    /* petit espace entre bouton et menu */
-    background: rgba(15, 15, 18, 0.96);
+    background: rgba(0, 0, 0, 0.7);
     border: 1px solid #2f3336;
     border-radius: 12px;
     box-shadow: 0 -4px 16px rgba(0,0,0,0.4);  /* ombre vers le haut */
