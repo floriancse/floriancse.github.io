@@ -536,20 +536,6 @@ async function loadTweets(days) {
     }
 }
 
-const authorFilterBtn = document.getElementById("authorFilterBtn");
-const authorDropdown = document.getElementById("authorDropdown");
-authorFilterBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    authorDropdown.classList.toggle("open");
-    authorFilterBtn.classList.toggle("open");
-});
-
-document.addEventListener("click", (e) => {
-    if (!authorDropdown.contains(e.target) && e.target !== authorFilterBtn) {
-        authorDropdown.classList.remove("open");
-        authorFilterBtn.classList.remove("open");
-    }
-});
 
 const map = new maplibregl.Map({
     container: 'map',
@@ -757,20 +743,7 @@ function toggleLayer(layerId) {
     });
 }
 
-const layerFilterBtn = document.getElementById("layerFilterBtn");
-const layerDropdown = document.getElementById("layerDropdown");
-layerFilterBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    layerDropdown.classList.toggle("open");
-    layerFilterBtn.classList.toggle("open");
-});
 
-document.addEventListener("click", (e) => {
-    if (!layerDropdown.contains(e.target) && e.target !== layerFilterBtn) {
-        layerDropdown.classList.remove("open");
-        layerFilterBtn.classList.remove("open");
-    }
-});
 
 map.on('style.load', async () => {
     map.setProjection({ type: 'globe' });
@@ -1582,4 +1555,106 @@ async function loadCountryEvents(countryName, period) {
         console.error("Erreur lors du chargement des événements:", error);
         eventsList.innerHTML = '<div class="feed-empty">Erreur lors du chargement des événements</div>';
     }
+}
+
+
+// 1. Gestion du menu unique
+const optionBtn = document.getElementById("optionBtn");
+const optionsMenu = document.getElementById("optionsMenu");
+
+optionBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    optionsMenu.classList.toggle("visible");
+});
+
+document.addEventListener("click", (e) => {
+    if (!optionBtn.contains(e.target) && !optionsMenu.contains(e.target)) {
+        optionsMenu.classList.remove("visible");
+    }
+});
+
+function renderAuthorList() {
+    const container = document.getElementById("authorList");
+    container.innerHTML = "";
+
+    allAuthors.forEach(author => {
+        const item = document.createElement("div");
+        item.className = "author-item";
+        
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = !selectedAuthors.has(author);
+        
+        cb.addEventListener("change", () => {
+            if (cb.checked) {
+                selectedAuthors.delete(author);
+            } else {
+                selectedAuthors.add(author);
+            }
+            loadTweets(currentDays);
+            if (isTweetsFeedOpen) loadTweetsFeed();
+        });
+
+        const label = document.createElement("label");
+        label.style.cursor = "pointer";
+        label.style.flex = "1";
+        label.style.display = "flex";
+        label.style.alignItems = "center";
+        label.style.gap = "10px";
+
+        const img = document.createElement("img");
+        img.src = `img/${author}.jpg`;
+        img.style.width = "20px";
+        img.style.height = "20px";
+        img.style.borderRadius = "50%";
+        img.onerror = () => img.style.display = "none";
+
+        const span = document.createElement("span");
+        span.textContent = author;
+
+        label.appendChild(img);
+        label.appendChild(span);
+
+        item.appendChild(cb);
+        item.appendChild(label);
+
+        // Clique sur la ligne entière → toggle checkbox
+        item.addEventListener("click", e => {
+            if (e.target !== cb) cb.click();
+        });
+
+        container.appendChild(item);
+    });
+}
+
+// Idem pour les layers (très similaire)
+function renderLayerList() {
+    const container = document.getElementById("layerList");
+    container.innerHTML = "";
+
+    allLayers.forEach(layer => {
+        const item = document.createElement("div");
+        item.className = "layer-item author-item"; // réutilisation style
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = !selectedLayers.has(layer.id);
+
+        cb.addEventListener("change", () => {
+            toggleLayer(layer.id);   // ta fonction existante
+        });
+
+        const label = document.createElement("label");
+        label.textContent = layer.name;
+        label.style.flex = "1";
+
+        item.appendChild(cb);
+        item.appendChild(label);
+
+        item.addEventListener("click", e => {
+            if (e.target !== cb) cb.click();
+        });
+
+        container.appendChild(item);
+    });
 }

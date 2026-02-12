@@ -62,7 +62,7 @@
         <div class="panel-header">
             <div class="panel-titles">
                 <h2>Feed OSINT</h2>
-                <h3>Derniers tweets par ordre chronologique</h3>
+                <h3>Événements par ordre chronologique inversé</h3>
             </div>
             <button id="close-tweets-feed" class="close-btn">×</button>
         </div>
@@ -87,23 +87,6 @@
 
         <div class="right-controls">
 
-            <div class="author-filter-container">
-                <button class="author-filter-btn" id="layerFilterBtn">
-                    <i class="fas fa-layer-group"></i>
-                </button>
-                <div class="author-dropdown" id="layerDropdown">
-                    <div id="layerList"></div>
-                </div>
-            </div>
-
-            <div class="author-filter-container">
-                <button class="author-filter-btn" id="authorFilterBtn" title="Sources">
-                    <i class="fas fa-rss"></i>
-                </button>
-                <div class="author-dropdown" id="authorDropdown">
-                    <div id="authorList"></div>
-                </div>
-            </div>
             <button id="rotationToggleBtn" class="rotation-btn active">⏸</button>
 
             <div class="search-input-wrapper">
@@ -119,7 +102,46 @@
     </div>
 
     <div id="last-update"></div>
+    <div class="bottom-right-controls">
+        <div class="author-filter-container">
+            <button class="option-change-btn" id="optionBtn" title="Options et filtres">
+                <i class="fa-solid fa-gear"></i>
+            </button>
 
+            <!-- Menu vertical qui s'ouvre vers le haut -->
+            <div class="options-menu vertical" id="optionsMenu">
+
+                <!-- Fond de carte -->
+                <div class="menu-section">
+                    <div class="section-title">
+                        <i class="fa-regular fa-map"></i> Fond de carte
+                    </div>
+
+                </div>
+
+                <hr class="menu-divider">
+
+                <!-- Couches -->
+                <div class="menu-section">
+                    <div class="section-title">
+                        <i class="fas fa-layer-group"></i> Couches visibles
+                    </div>
+                    <div id="layerList" class="checkbox-list"></div>
+                </div>
+
+                <hr class="menu-divider">
+
+                <!-- Auteurs -->
+                <div class="menu-section">
+                    <div class="section-title">
+                        <i class="fas fa-rss"></i> Sources / Auteurs
+                    </div>
+                    <div id="authorList" class="checkbox-list"></div>
+
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Scripts -->
     <script src="main.js"></script>
 
