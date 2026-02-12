@@ -713,7 +713,7 @@ window.closePopup = () => {
 let selectedLayers = new Set();
 let allLayers = [
     { id: 'disputed', name: 'Zone contestée', layerIds: ['disputed_area_fill', 'disputed_area_outline'] },
-    { id: 'heatmap', name: 'Événements', layerIds: ['tweets_points', 'tweets_viseur', 'tweets_hover_area', 'tweets_points_other', 'pulse-high-importance'] },
+    { id: 'heatmap', name: 'Événements', layerIds: ['tweets_points', 'tweets_viseur', 'tweets_hover_area', 'tweets_heatmap_other', 'pulse-high-importance'] },
 ];
 
 function renderLayerList() {

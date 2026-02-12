@@ -411,7 +411,6 @@ body {
     top: calc(100% + 8px);
     right: 0;
     background-color: rgba(0, 0, 0, 0.7);
-    border: 1px solid #2f3336;
     border-radius: 12px;
     max-height: 400px;
     overflow-y: auto;
@@ -434,7 +433,6 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    border-bottom: 1px solid #2f3336;
 }
 
 .author-item:last-child {
@@ -828,7 +826,6 @@ body {
     left: -450px;
     width: 450px;
     background: rgba(0, 0, 0, 0.9);
-    border: 1px solid #2f3336;
     border-left: none;
     border-radius: 0 12px 12px 0;
     color: #e7e9ea;
