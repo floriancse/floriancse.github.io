@@ -420,24 +420,7 @@ body {
     position: relative;
 }
 
-.author-filter-btn,
-.basemap-change-btn,
-.option-change-btn {
-    background-color: rgba(0, 0, 0, 0.7);
-    border: none;
-    color: #e7e9ea;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    border-radius: 50%;
-    font-family: monospace;
-    font-size: 15px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+
  
 .author-filter-btn:hover,
 .basemap-change-btn:hover,
@@ -1791,15 +1774,15 @@ h3 {
 /* Conteneur du bouton en bas à droite */
 .bottom-right-controls {
     position: fixed;
-    bottom: 30px;                    /* au-dessus du bandeau inférieur de 40px + marge */
+    bottom: 10px;                    /* au-dessus du bandeau inférieur de 40px + marge */
     right: 16px;
     z-index: 950;                    /* au-dessus de la map, mais en dessous des panneaux */
 }
 
 /* Le bouton lui-même */
 .option-change-btn {
-    width: 44px;
-    height: 44px;
+    width: 37px;
+    height: 37px;
     border-radius: 50%;
     background: rgba(0, 0, 0, 0.7);
     border: none;
