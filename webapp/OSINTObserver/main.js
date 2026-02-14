@@ -1248,7 +1248,7 @@ map.on('click', 'world_areas_fill', (e) => {
     const areaId = feature.id || feature.properties.id;
 
     // Mettre à jour le titre
-    document.getElementById('area-title').textContent = "Vue générale : " + areaName;
+    document.getElementById('area-title').textContent = areaName;
 
     // Réinitialiser à l'onglet Résumé
     document.querySelectorAll('.panel-tab[data-tab]').forEach(tab => {
