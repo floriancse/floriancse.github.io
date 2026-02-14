@@ -421,7 +421,7 @@ body {
 }
 
 
- 
+
 .author-filter-btn:hover,
 .basemap-change-btn:hover,
 .option-change-btn:hover {
@@ -569,8 +569,8 @@ body {
     transition: all 0.2s;
     white-space: nowrap;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 37px;
+    height: 37px;
     margin-right: 0;
     display: flex;
     align-items: center;
@@ -584,8 +584,7 @@ body {
     background-color: #10b981;
     border-color: #10B981;
     color: #fff;
-    width: 37px;
-    height: 37px;
+
 }
 
 .rotation-btn:hover {
@@ -806,36 +805,6 @@ h3 {
     color: #e7e9ea;
     position: relative;
     width: 400px;
-}
-
-.tweet-card-close {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s;
-    z-index: 10;
-}
-
-.tweet-card-close:hover {
-    background-color: rgba(47, 51, 54, 0.5);
-}
-
-.tweet-card-close svg {
-    color: #9ca3af;
-    width: 16px;
-    height: 16px;
-}
-
-.tweet-card-close:hover svg {
-    color: #ffffff;
 }
 
 .tweet-card-nav {
@@ -1313,10 +1282,11 @@ h3 {
 .close-btn {
     background: none;
     border: 1px solid rgb(56, 56, 56);
-    border-radius: 8px;
+    border-radius: 6px;
     color: #9ca3af;
     font-size: 18px;
     cursor: pointer;
+
 }
 
 .close-btn:hover {
@@ -1682,11 +1652,12 @@ h3 {
     font-weight: 600;
     color: #e7e9ea;
     border-bottom: 1px solid #2f3336;
-    background: rgba(30,30,35,0.5);
+    background: rgba(30, 30, 35, 0.5);
 }
 
 .menu-columns {
-    display: flex;               /* ← la clé : flex horizontal */
+    display: flex;
+    /* ← la clé : flex horizontal */
     flex-direction: row;
 }
 
@@ -1703,9 +1674,20 @@ h3 {
 }
 
 /* Largeurs relatives des colonnes */
-.basemap-column   { flex: 0 0 180px; }   /* petite colonne fixe */
-.layers-column    { flex: 0 0 220px; }
-.authors-column   { flex: 1; }           /* prend le reste → plus large */
+.basemap-column {
+    flex: 0 0 180px;
+}
+
+/* petite colonne fixe */
+.layers-column {
+    flex: 0 0 220px;
+}
+
+.authors-column {
+    flex: 1;
+}
+
+/* prend le reste → plus large */
 
 /* Scroll uniquement sur la liste auteurs si beaucoup d'éléments */
 .authors-column .checkbox-list {
@@ -1735,21 +1717,22 @@ h3 {
     .options-menu {
         width: 90vw;
     }
-    
+
     .menu-columns {
-        flex-direction: column;     /* ← empile verticalement sur petits écrans */
+        flex-direction: column;
+        /* ← empile verticalement sur petits écrans */
     }
-    
+
     .menu-column {
         border-right: none;
         border-bottom: 1px solid #2f3336;
         min-height: auto;
     }
-    
+
     .menu-column:last-child {
         border-bottom: none;
     }
-    
+
     .basemap-column,
     .layers-column {
         flex: none;
@@ -1774,9 +1757,11 @@ h3 {
 /* Conteneur du bouton en bas à droite */
 .bottom-right-controls {
     position: fixed;
-    bottom: 10px;                    /* au-dessus du bandeau inférieur de 40px + marge */
+    bottom: 10px;
+    /* au-dessus du bandeau inférieur de 40px + marge */
     right: 16px;
-    z-index: 950;                    /* au-dessus de la map, mais en dessous des panneaux */
+    z-index: 950;
+    /* au-dessus de la map, mais en dessous des panneaux */
 }
 
 /* Le bouton lui-même */
@@ -1793,23 +1778,27 @@ h3 {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 
 /* Le menu vertical qui s'ouvre VERS LE HAUT */
 .options-menu.vertical {
     position: absolute;
-    bottom: 100%;                    /* collé au-dessus du bouton */
+    bottom: 100%;
+    /* collé au-dessus du bouton */
     right: 0;
-    width: 220px;                    /* largeur fixe raisonnable pour vertical */
+    width: 220px;
+    /* largeur fixe raisonnable pour vertical */
     max-height: 70vh;
     overflow-y: auto;
-    transform: translateY(-12px);    /* petit espace entre bouton et menu */
+    transform: translateY(-12px);
+    /* petit espace entre bouton et menu */
     background: rgba(0, 0, 0, 0.7);
     border: 1px solid #2f3336;
     border-radius: 12px;
-    box-shadow: 0 -4px 16px rgba(0,0,0,0.4);  /* ombre vers le haut */
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4);
+    /* ombre vers le haut */
     z-index: 1100;
     display: none;
     backdrop-filter: blur(8px);
@@ -1822,7 +1811,8 @@ h3 {
 
 /* Ajustements pour le scroll interne */
 .options-menu.vertical .checkbox-list {
-    max-height: 40vh;               /* limite la hauteur des listes si besoin */
+    max-height: 40vh;
+    /* limite la hauteur des listes si besoin */
     overflow-y: auto;
 }
 
@@ -1833,13 +1823,13 @@ h3 {
         right: 6vw;
         left: auto;
     }
-    
+
     .bottom-right-controls {
         right: 12px;
         bottom: 52px;
     }
 }
 
-.menu-divider{
+.menu-divider {
     border: 1px solid #2e2e2e
 }

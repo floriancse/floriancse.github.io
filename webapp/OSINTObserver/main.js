@@ -622,34 +622,25 @@ function createPopupContent(props, showNavigation = false, currentIndex = 0, tot
     }
 
     return `
-    <div class="tweet-card${importantClass}">        
-        <button onclick="window.closePopup()" class="tweet-card-close" style="display: ${popupPinned ? 'flex' : 'none'}">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
+<div class="tweet-card${importantClass}">        
+    <div class="tweet-card-header">
+        <div class="tweet-card-avatar">
+            <img src="img/${props.author}.jpg" alt="${props.author}" 
+                 onerror="this.style.display='none'; this.parentElement.textContent='${getAuthorInitials(props.author)}';">
+        </div>
+        <div class="tweet-card-author">${props.author}</div>
+        <div class="tweet-card-time">${formattedTime} · ${formattedDate}</div>
+
+        <button onclick="window.closePopup()" class="close-btn" 
+                style="display: ${popupPinned ? 'flex' : 'none'}">
+×
         </button>
-        <div class="tweet-card-header">
-            <div class="tweet-card-avatar">
-                <img src="img/${props.author}.jpg" alt="${props.author}" 
-                     onerror="this.style.display='none'; this.parentElement.textContent='${getAuthorInitials(props.author)}';">
-            </div>
-            <div class="tweet-card-author">${props.author}</div>
-            <div class="tweet-card-time">${formattedTime} · ${formattedDate}</div>
-        </div>
-        <div class="tweet-card-body">${props.body}</div>
-        ${imagesHtml}
-        <div class="tweet-card-actions">
-            <a href="${props.url}" class="tweet-card-link" target="_blank">Voir le tweet ↗</a>
-            ${showNavigation && totalCount > 1 ? `
-                <div class="tweet-card-nav">
-                    <span class="tweet-card-nav-count">${currentIndex + 1}/${totalCount}</span>
-                    <button onclick="window.previousTweet()" class="tweet-card-nav-btn">←</button>
-                    <button onclick="window.nextTweet()" class="tweet-card-nav-btn">→</button>
-                </div>
-            ` : ''}
-        </div>
     </div>
+
+    <div class="tweet-card-body">${props.body}</div>
+    ${imagesHtml}
+    <div class="tweet-card-actions">...</div>
+</div>
 `;
 }
 
