@@ -103,7 +103,7 @@ async function loadTweetsFeed() {
         if (cachedData[currentDays]) {
             data = cachedData[currentDays];
         } else {
-            const response = await fetch(`https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?hours=${hours}`);
+            const response = await fetch(`https://api-conflit-twitter.ovh/api/twitter_conflicts/tweets.geojson?hours=${hours}`);
             data = await response.json();
         }
 
@@ -388,14 +388,14 @@ async function preloadAllData() {
     try {
         const authorPromises = periods.map(async (days) => {
             const hours = days * 24;
-            const response = await fetch(`https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/authors?hours=${hours}`);
+            const response = await fetch(`https://api-conflit-twitter.ovh/api/twitter_conflicts/authors?hours=${hours}`);
             const data = await response.json();
             cachedAuthors[days] = data.authors || [];
         });
 
         const tweetPromises = periods.map(async (days) => {
             const hours = days * 24;
-            const response = await fetch(`https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?hours=${hours}`);
+            const response = await fetch(`https://api-conflit-twitter.ovh/api/twitter_conflicts/tweets.geojson?hours=${hours}`);
             const data = await response.json();
             cachedData[days] = data;
         });
@@ -415,7 +415,7 @@ async function loadAuthors() {
         if (cachedAuthors[currentDays]) {
             allAuthors = cachedAuthors[currentDays];
         } else {
-            const response = await fetch(`https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/authors?hours=${hours}`);
+            const response = await fetch(`https://api-conflit-twitter.ovh/api/twitter_conflicts/authors?hours=${hours}`);
             const data = await response.json();
             allAuthors = data.authors || [];
             cachedAuthors[currentDays] = allAuthors;
@@ -484,7 +484,7 @@ async function loadTweets(days) {
     } else {
         const params = new URLSearchParams({ hours: hours });
         const response = await fetch(
-            `https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?${params.toString()}`
+            `https://api-conflit-twitter.ovh/api/twitter_conflicts/tweets.geojson?${params.toString()}`
         );
         data = await response.json();
         cachedData[days] = data;
@@ -766,12 +766,12 @@ map.on('style.load', async () => {
 
     map.addSource('disputed_area', {
         type: 'geojson',
-        data: 'https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/disputed_area.geojson'
+        data: 'https://api-conflit-twitter.ovh/api/twitter_conflicts/disputed_area.geojson'
     });
 
     map.addSource('world_areas', {
         type: 'geojson',
-        data: 'https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/world_areas.geojson',
+        data: 'https://api-conflit-twitter.ovh/api/twitter_conflicts/world_areas.geojson',
         generateId: true
     });
 
@@ -1340,7 +1340,7 @@ async function loadareaHeatmap(areaName) {
         const hours = daysSinceStart * 24;
 
         const response = await fetch(
-            `https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?area=${encodeURIComponent(areaName)}&hours=${hours}`
+            `https://api-conflit-twitter.ovh/api/twitter_conflicts/tweets.geojson?area=${encodeURIComponent(areaName)}&hours=${hours}`
         );
         const data = await response.json();
 
@@ -1556,7 +1556,7 @@ async function loadareaEvents(areaName, period) {
         const hours = daysSinceStart * 24;
 
         const response = await fetch(
-            `https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?area=${encodeURIComponent(areaName)}&hours=${hours}`
+            `https://api-conflit-twitter.ovh/api/twitter_conflicts/tweets.geojson?area=${encodeURIComponent(areaName)}&hours=${hours}`
         );
         const data = await response.json();
 
