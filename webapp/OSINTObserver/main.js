@@ -29,9 +29,9 @@ let isTweetsFeedOpen = false;
 let allTweetsForFeed = [];
 
 // Variables pour le panneau pays
-let currentCountryId = null;
-let currentCountryName = null;
-let currentCountryTab = 'summary'; // 'summary' ou 'events'
+let currentareaId = null;
+let currentareaName = null;
+let currentareaTab = 'summary'; // 'summary' ou 'events'
 
 function updateRotationButton() {
     const btn = document.getElementById("rotationToggleBtn");
@@ -259,10 +259,6 @@ function createFeedTweetItem(props, feature, index) {
     const footer = document.createElement('div');
     footer.className = 'feed-tweet-footer';
 
-    const typologySpan = document.createElement('span');
-    typologySpan.className = `feed-tweet-typology ${props.typology}`;
-    typologySpan.textContent = props.typology;
-
     // Actions
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'feed-tweet-actions';
@@ -387,12 +383,6 @@ document.getElementById("rotationToggleBtn").addEventListener("click", toggleRot
 document.getElementById("tweets-feed-toggle").addEventListener("click", toggleTweetsFeed);
 document.getElementById("close-tweets-feed").addEventListener("click", toggleTweetsFeed);
 
-document.addEventListener("DOMContentLoaded", async () => {
-    const response = await fetch("https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/last_tweet_date");
-    const data = await response.json();
-    document.getElementById("last-update").textContent =
-        `Dernière mise à jour : ${data.last_date} à ${data.last_hour}`;
-});
 
 // Précharge toutes les données au démarrage
 async function preloadAllData() {
@@ -747,8 +737,6 @@ function toggleLayer(layerId) {
     });
 }
 
-
-
 map.on('style.load', async () => {
     map.setProjection({ type: 'globe' });
 
@@ -784,9 +772,9 @@ map.on('style.load', async () => {
         data: 'https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/disputed_area.geojson'
     });
 
-    map.addSource('world_countries', {
+    map.addSource('world_areas', {
         type: 'geojson',
-        data: 'https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/world_countries.geojson',
+        data: 'https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/world_areas.geojson',
         generateId: true
     });
 
@@ -811,51 +799,78 @@ map.on('style.load', async () => {
         }
     });
 
+    // 1. Ton layer de remplissage (fill) – reste presque comme tu l'as
     map.addLayer({
-        id: 'world_countries_fill',
+        id: 'world_areas_fill',
         type: 'fill',
-        source: 'world_countries',
+        source: 'world_areas',
         paint: {
-            'fill-color': [
+            'fill-opacity': [
                 'case',
                 ['boolean', ['feature-state', 'hover'], false],
-                'rgba(123, 123, 123, 0.2)',
-                'rgba(0,0,0,0)'
-            ],
+                0.1,    // plus visible au hover
+                0     // discret sinon (ou 0)
+            ]
         }
     });
 
-    let hoveredCountryId = null;
+    // 2. Ajoute un layer de contour (line) juste après
+    map.addLayer({
+        id: 'world_areas_outline',
+        type: 'line',
+        source: 'world_areas',           // ← même source !
+        layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        paint: {
+            'line-color': [
+                'case',
+                ['boolean', ['feature-state', 'hover'], false],
+                '#10b981',           // couleur du contour au hover (ex: bleu vif)
+                'rgba(0,0,0,0)'      // transparent quand pas hover
+            ],
+            'line-width': [
+                'case',
+                ['boolean', ['feature-state', 'hover'], false],
+                2,                   // épaisseur au hover (2–5 selon le zoom)
+                0                    // caché sinon
+            ],
+            'line-opacity': 1
+        }
+    });
 
-    map.on('mousemove', 'world_countries_fill', (e) => {
+    let hoveredareaId = null;
+
+    map.on('mousemove', 'world_areas_fill', (e) => {
         if (e.features.length > 0) {
             const feature = e.features[0];
 
-            if (hoveredCountryId !== null && hoveredCountryId !== feature.id) {
+            if (hoveredareaId !== null && hoveredareaId !== feature.id) {
                 map.setFeatureState(
-                    { source: 'world_countries', id: hoveredCountryId },
+                    { source: 'world_areas', id: hoveredareaId },
                     { hover: false }
                 );
             }
 
             map.setFeatureState(
-                { source: 'world_countries', id: feature.id },
+                { source: 'world_areas', id: feature.id },
                 { hover: true }
             );
 
-            hoveredCountryId = feature.id;
+            hoveredareaId = feature.id;
             map.getCanvas().style.cursor = 'pointer';
         }
     });
 
-    map.on('mouseleave', 'world_countries_fill', () => {
-        if (hoveredCountryId !== null) {
+    map.on('mouseleave', 'world_areas_fill', () => {
+        if (hoveredareaId !== null) {
             map.setFeatureState(
-                { source: 'world_countries', id: hoveredCountryId },
+                { source: 'world_areas', id: hoveredareaId },
                 { hover: false }
             );
         }
-        hoveredCountryId = null;
+        hoveredareaId = null;
         map.getCanvas().style.cursor = '';
     });
 
@@ -1178,11 +1193,6 @@ searchInput.addEventListener("input", () => {
     }, 300);
 });
 
-// ======================================
-// ======================================
-// GESTION DU COUNTRY PANEL
-// ======================================
-
 // Gestion des onglets Résumé / Événements
 document.addEventListener('DOMContentLoaded', () => {
     const panelTabs = document.querySelectorAll('.panel-tab[data-tab]');
@@ -1206,14 +1216,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Sauvegarder l'onglet actuel
-            currentCountryTab = tabName;
+            currentareaTab = tabName;
 
             // Charger les données appropriées (toujours 30j)
-            if (currentCountryName) {
+            if (currentareaName) {
                 if (tabName === 'summary') {
-                    loadCountryHeatmap(currentCountryName);
+                    loadareaHeatmap(currentareaName);
                 } else if (tabName === 'events') {
-                    loadCountryEvents(currentCountryName, 30);
+                    loadareaEvents(currentareaName, 30);
                 }
             }
         });
@@ -1221,7 +1231,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Click sur un pays
-map.on('click', 'world_countries_fill', (e) => {
+map.on('click', 'world_areas_fill', (e) => {
     if (!e.features || e.features.length === 0) return;
 
     // Vérifier s'il y a un tweet au même endroit
@@ -1234,11 +1244,11 @@ map.on('click', 'world_countries_fill', (e) => {
     }
 
     const feature = e.features[0];
-    const countryName = feature.properties.name || feature.properties.SOVEREIGNT || feature.properties.NAME || 'Pays inconnu';
-    const countryId = feature.id || feature.properties.id;
+    const areaName = feature.properties.name || feature.properties.SOVEREIGNT || feature.properties.NAME || 'Pays inconnu';
+    const areaId = feature.id || feature.properties.id;
 
     // Mettre à jour le titre
-    document.getElementById('country-title').textContent = "Vue générale : " + countryName;
+    document.getElementById('area-title').textContent = "Vue générale : " + areaName;
 
     // Réinitialiser à l'onglet Résumé
     document.querySelectorAll('.panel-tab[data-tab]').forEach(tab => {
@@ -1254,23 +1264,23 @@ map.on('click', 'world_countries_fill', (e) => {
     });
     document.getElementById('summary-tab').classList.add('active');
 
-    currentCountryTab = 'summary';
-    currentCountryId = countryId;
-    currentCountryName = countryName;
+    currentareaTab = 'summary';
+    currentareaId = areaId;
+    currentareaName = areaName;
 
     // Charger la heatmap
-    loadCountryHeatmap(countryName);
+    loadareaHeatmap(areaName);
 
     // Ouvrir le panneau
-    const panel = document.getElementById('country-panel');
+    const panel = document.getElementById('area-panel');
     panel.classList.add('visible');
 });
 
 // Fermeture du panneau
 document.getElementById('close-panel').addEventListener('click', () => {
-    document.getElementById('country-panel').classList.remove('visible');
-    currentCountryId = null;
-    currentCountryName = null;
+    document.getElementById('area-panel').classList.remove('visible');
+    currentareaId = null;
+    currentareaName = null;
 });
 
 // Fermer si on clique ailleurs sur la map
@@ -1283,29 +1293,25 @@ map.on('click', (e) => {
         return;
     }
 
-    const features = map.queryRenderedFeatures(e.point, { layers: ['world_countries_fill'] });
+    const features = map.queryRenderedFeatures(e.point, { layers: ['world_areas_fill'] });
     if (features.length === 0) {
-        document.getElementById('country-panel').classList.remove('visible');
-        currentCountryId = null;
-        currentCountryName = null;
+        document.getElementById('area-panel').classList.remove('visible');
+        currentareaId = null;
+        currentareaName = null;
     }
 });
 
 // Curseur au survol
-map.on('mouseenter', 'world_countries_fill', () => {
+map.on('mouseenter', 'world_areas_fill', () => {
     map.getCanvas().style.cursor = 'pointer';
 });
-map.on('mouseleave', 'world_countries_fill', () => {
+map.on('mouseleave', 'world_areas_fill', () => {
     map.getCanvas().style.cursor = '';
 });
 
-// ======================================
-// HEATMAP CALENDRIER (30 JOURS)
-// ======================================
-
-async function loadCountryHeatmap(countryName) {
-    const countryInfo = document.getElementById('country-info');
-    countryInfo.innerHTML = '<div class="feed-loading">Chargement des données...</div>';
+async function loadareaHeatmap(areaName) {
+    const areaInfo = document.getElementById('area-info');
+    areaInfo.innerHTML = '<div class="feed-loading">Chargement des données...</div>';
 
     try {
         // Calculer le début du mois actuel
@@ -1315,22 +1321,22 @@ async function loadCountryHeatmap(countryName) {
         const hours = daysSinceStart * 24;
 
         const response = await fetch(
-            `https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?country=${encodeURIComponent(countryName)}&hours=${hours}`
+            `https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?area=${encodeURIComponent(areaName)}&hours=${hours}`
         );
         const data = await response.json();
 
-        createHeatmap(data.features, countryName);
+        createHeatmap(data.features, areaName);
 
     } catch (error) {
         console.error("Erreur lors du chargement des données:", error);
-        countryInfo.innerHTML =
+        areaInfo.innerHTML =
             '<div class="feed-empty">Aucun événement</div>';
 
     }
 }
 
 
-function createHeatmap(features, countryName) {
+function createHeatmap(features, areaName) {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
@@ -1466,7 +1472,7 @@ function createHeatmap(features, countryName) {
         </div>
     `;
 
-    document.getElementById('country-info').innerHTML = html;
+    document.getElementById('area-info').innerHTML = html;
 
     // Ajouter les tooltips
     setTimeout(() => {
@@ -1519,8 +1525,8 @@ function createHeatmap(features, countryName) {
     }, 100);
 }
 
-async function loadCountryEvents(countryName, period) {
-    const eventsList = document.getElementById('country-events-list');
+async function loadareaEvents(areaName, period) {
+    const eventsList = document.getElementById('area-events-list');
     eventsList.innerHTML = '<div class="feed-loading">Chargement des événements...</div>';
 
     try {
@@ -1531,7 +1537,7 @@ async function loadCountryEvents(countryName, period) {
         const hours = daysSinceStart * 24;
 
         const response = await fetch(
-            `https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?country=${encodeURIComponent(countryName)}&hours=${hours}`
+            `https://api-conflit-twitter.duckdns.org/api/twitter_conflicts/tweets.geojson?area=${encodeURIComponent(areaName)}&hours=${hours}`
         );
         const data = await response.json();
 
