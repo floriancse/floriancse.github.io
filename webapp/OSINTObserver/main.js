@@ -29,9 +29,6 @@ let isTweetsFeedOpen = false;
 let allTweetsForFeed = [];
 
 // Variables pour le panneau pays
-let currentareaId = null;
-let currentareaName = null;
-let currentareaTab = 'summary'; // 'summary' ou 'events'
 
 function updateRotationButton() {
     const btn = document.getElementById("rotationToggleBtn");
@@ -639,7 +636,16 @@ function createPopupContent(props, showNavigation = false, currentIndex = 0, tot
 
     <div class="tweet-card-body">${props.body}</div>
     ${imagesHtml}
-    <div class="tweet-card-actions">...</div>
+    <div class="tweet-card-actions">
+            <a href="${props.url}" class="tweet-card-link" target="_blank">Voir le tweet ↗</a>
+            ${showNavigation && totalCount > 1 ? `
+                <div class="tweet-card-nav">
+                    <span class="tweet-card-nav-count">${currentIndex + 1}/${totalCount}</span>
+                    <button onclick="window.previousTweet()" class="tweet-card-nav-btn">←</button>
+                    <button onclick="window.nextTweet()" class="tweet-card-nav-btn">→</button>
+                </div>
+            ` : ''}
+        </div>
 </div>
 `;
 }
@@ -1221,75 +1227,97 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Variable pour stocker l'area actuellement ouverte (on garde currentareaId)
+let currentareaId = null;
+let currentareaName = null;
+let currentareaTab = 'summary';
+
 // Click sur un pays
 map.on('click', 'world_areas_fill', (e) => {
     if (!e.features || e.features.length === 0) return;
 
-    // Vérifier s'il y a un tweet au même endroit
+    // Éviter de traiter si on clique sur une zone de tweet
     const tweetsAtPoint = map.queryRenderedFeatures(e.point, {
         layers: ['tweets_hover_area']
     });
-
     if (tweetsAtPoint && tweetsAtPoint.length > 0) {
         return;
     }
 
     const feature = e.features[0];
-    const areaName = feature.properties.name || feature.properties.SOVEREIGNT || feature.properties.NAME || 'Pays inconnu';
-    const areaId = feature.id || feature.properties.id;
+    const areaName = feature.properties.name 
+        || feature.properties.SOVEREIGNT 
+        || feature.properties.NAME 
+        || 'Pays inconnu';
+    
+    const areaId = feature.id || feature.properties.id || areaName; // fallback robuste
 
-    // Mettre à jour le titre
-    document.getElementById('area-title').textContent = areaName;
+    const panel = document.getElementById('area-panel');
 
-    // Réinitialiser à l'onglet Résumé
-    document.querySelectorAll('.panel-tab[data-tab]').forEach(tab => {
-        if (tab.dataset.tab === 'summary') {
-            tab.classList.add('active');
-        } else {
-            tab.classList.remove('active');
-        }
-    });
+    // ────────────────────────────────────────
+    //  CAS 1 : on clique sur le même pays → on ferme
+    // ────────────────────────────────────────
+    if (currentareaId === areaId && panel.classList.contains('visible')) {
+        panel.classList.remove('visible');
+        currentareaId = null;
+        currentareaName = null;
+        return;
+    }
 
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    document.getElementById('summary-tab').classList.add('active');
-
-    currentareaTab = 'summary';
+    // ────────────────────────────────────────
+    //  CAS 2 : nouveau pays ou panneau fermé → on ouvre/met à jour
+    // ────────────────────────────────────────
     currentareaId = areaId;
     currentareaName = areaName;
 
-    // Charger la heatmap
+    // Mise à jour du titre
+    document.getElementById('area-title').textContent = areaName;
+
+    // Reset onglet → Résumé
+    document.querySelectorAll('.panel-tab[data-tab]').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === 'summary');
+    });
+
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.toggle('active', content.id === 'summary-tab');
+    });
+
+    currentareaTab = 'summary';
+
+    // Charger la heatmap (ou autre contenu)
     loadareaHeatmap(areaName);
 
     // Ouvrir le panneau
-    const panel = document.getElementById('area-panel');
     panel.classList.add('visible');
 });
 
-// Fermeture du panneau
+// Fermeture explicite via le bouton ×
 document.getElementById('close-panel').addEventListener('click', () => {
     document.getElementById('area-panel').classList.remove('visible');
     currentareaId = null;
     currentareaName = null;
 });
 
-// Fermer si on clique ailleurs sur la map
+// Fermer si on clique sur la carte mais PAS sur un pays
 map.on('click', (e) => {
+    // Ignorer si clic sur tweet
     const tweetsAtPoint = map.queryRenderedFeatures(e.point, {
         layers: ['tweets_hover_area']
     });
+    if (tweetsAtPoint?.length > 0) return;
 
-    if (tweetsAtPoint && tweetsAtPoint.length > 0) {
-        return;
-    }
+    // Vérifier si on a cliqué sur un pays
+    const features = map.queryRenderedFeatures(e.point, { 
+        layers: ['world_areas_fill'] 
+    });
 
-    const features = map.queryRenderedFeatures(e.point, { layers: ['world_areas_fill'] });
+    // Si aucun pays → fermer
     if (features.length === 0) {
         document.getElementById('area-panel').classList.remove('visible');
         currentareaId = null;
         currentareaName = null;
     }
+    // Note : s'il y a un pays → le handler spécifique plus haut s'en charge
 });
 
 // Curseur au survol
